@@ -12,6 +12,7 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
 ## Structure
   - `ndsdl_compiler.ml`: Toplevel commandline. Runs all phases of compilation.
   - `parse/`: Parser and lexer.
+  - `ir/`: Intermediate representations.
   - `check/`: Static checking.
   - `trans/`: Translation of NDSdL into dL. Soundness proofs for translation
     are in the paper.
