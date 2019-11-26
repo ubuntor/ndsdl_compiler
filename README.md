@@ -1,15 +1,17 @@
-# SdL Compiler
+# NDSdL Compiler
 
 ## Build Instructions
 
-Make sure `opam` is installed, then install `dune`, `core`, `ppx_jane` from
-`opam`.
+Make sure `opam` is installed, then install `dune`, `core`, `ppx_jane`,
+`menhir` from `opam`.
 
-Then run `make`. The executable will be in `_build/default/sdl_compiler.exe`.
+Then run `make`. The executable will be in `_build/default/ndsdl_compiler.exe`.
+
+You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
 
 ## Structure
-  - `sdl_compiler.ml`: Toplevel commandline. Runs all phases of compilation.
+  - `ndsdl_compiler.ml`: Toplevel commandline. Runs all phases of compilation.
   - `parse/`: Parser and lexer.
   - `check/`: Static checking.
-  - `trans/`: Translation of SdL into dL. Soundness proofs for translation
+  - `trans/`: Translation of NDSdL into dL. Soundness proofs for translation
     are in the paper.

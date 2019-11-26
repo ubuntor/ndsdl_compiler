@@ -5,8 +5,8 @@ let main ~input_file ~output_file =
   Printf.printf !"%s %s" input_file output_file
 
 let command =
-  Command.basic ~summary:"SdL-to-dL compiler"
-    ~readme:(fun () -> "Compiles SdL down to dL parsable by KeYmaera X")
+  Command.basic ~summary:"NDSdL-to-dL compiler"
+    ~readme:(fun () -> "Compiles NDSdL down to dL parsable by KeYmaera X")
     Command.Let_syntax.(
       let%map_open input_file = anon ("filename" %: Filename.arg_type)
       and output_file =

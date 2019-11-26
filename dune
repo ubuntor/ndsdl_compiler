@@ -1,6 +1,6 @@
 (include_subdirs unqualified)
 
 (executable
- (name sdl_compiler)
+ (name ndsdl_compiler)
  (libraries core)
  (preprocess (pps ppx_jane)))
