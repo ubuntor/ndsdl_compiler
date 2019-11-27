@@ -18,6 +18,7 @@
 %token EXISTS
 %token PLUS
 %token MINUS
+%token TIMES
 %token DIV
 %token EXP
 %token LBRACKET
@@ -30,7 +31,6 @@
 %token RANGLE
 %token ASSIGN
 %token ASSIGNANY
-%token STAR
 %token PRIME
 %token TEST
 %token SEMICOLON
@@ -54,7 +54,7 @@
 %left EQ NEQ LE LT GE GT
 %left PLUS MINUS
 %left NEG (* dummy *)
-%left TIMES DIV (* dummy *)
+%left TIMES DIV
 %right EXP
 
 %start <Ndsdl.Formula.t option> top_level
@@ -64,13 +64,12 @@ top_level:
 | p = formula; EOF { Some p }
 | EOF { None }
 
-
 term:
 | x = ID { Ndsdl.Term.Var x }
 | MINUS; e = term { Ndsdl.Term.Neg e } %prec NEG
 | e1 = term; PLUS; e2 = term { Ndsdl.Term.Plus (e1,e2) }
 | e1 = term; MINUS; e2 = term { Ndsdl.Term.Minus (e1,e2) }
-| e1 = term; STAR; e2 = term { Ndsdl.Term.Times (e1,e2) } %prec TIMES
+| e1 = term; TIMES; e2 = term { Ndsdl.Term.Times (e1,e2) }
 | e1 = term; DIV; e2 = term { Ndsdl.Term.Div (e1,e2) }
 | e1 = term; EXP; e2 = term { Ndsdl.Term.Exp (e1,e2) }
 | LPAREN; e = term; RPAREN { e }

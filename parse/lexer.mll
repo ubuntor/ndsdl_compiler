@@ -41,6 +41,7 @@ rule read = parse
 | "\\exists" { EXISTS }
 | "+" { PLUS }
 | "-" { MINUS }
+| "*" { TIMES }
 | "/" { DIV }
 | "^" { EXP }
 | "[" { LBRACKET }
@@ -53,7 +54,6 @@ rule read = parse
 | ">" { RANGLE }
 | ":=" { ASSIGN }
 | ":=*" { ASSIGNANY }
-| "*" { STAR }
 | "'" { PRIME }
 | "?" { TEST }
 | ";" { SEMICOLON }
