@@ -51,7 +51,6 @@ rule read = parse
 | "<" { LANGLE }
 | ">" { RANGLE }
 | ":=" { ASSIGN }
-| ":=*" { ASSIGNANY }
 | "'" { PRIME }
 | "?" { TEST }
 | ";" { SEMICOLON }

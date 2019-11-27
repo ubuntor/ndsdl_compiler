@@ -28,7 +28,6 @@
 %token LANGLE
 %token RANGLE
 %token ASSIGN
-%token ASSIGNANY
 %token PRIME
 %token TEST
 %token SEMICOLON
@@ -77,7 +76,7 @@ program:
 | a = program; SEMICOLON; b = program { Ndsdl.Program.Compose (a,b) }
 | a = program; CHOICE; b = program { Ndsdl.Program.Choice (a,b) }
 | x = ID; ASSIGN; e = term { Ndsdl.Program.Assign (x,e) }
-| x = ID; ASSIGNANY { Ndsdl.Program.Assignany x }
+| x = ID; ASSIGN; TIMES { Ndsdl.Program.Assignany x }
 | LBRACE; a = program; RBRACE; TIMES { Ndsdl.Program.Loop a } %prec LOOP
 | LBRACE; a = program; RBRACE { a }
 
