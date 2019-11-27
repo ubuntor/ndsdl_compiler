@@ -2,7 +2,10 @@ open Core
 
 let main ~input_file ~output_file =
   let output_file = Option.value ~default:(input_file ^ ".out") output_file in
-  Printf.printf !"%s %s" input_file output_file
+  match Parse.lex_and_parse input_file with
+  | Some parsed ->
+      Printf.printf !"Parsed successfully: %{sexp:Ndsdl.File.t}\n" parsed
+  | None -> Printf.printf !"Failed to parse"
 
 let command =
   Command.basic ~summary:"NDSdL-to-dL compiler"

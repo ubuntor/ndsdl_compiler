@@ -1,4 +1,5 @@
 {
+(* based on tokens and regexes from KeYMaera X, with additional tokens for NDSdL extensions *)
 open Lexing
 open Parser
 
@@ -14,13 +15,16 @@ let next_line lexbuf =
 
 let whitespace = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
-let id = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let id = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9']*['_']?['_']?['0'-'9']*
+let number = ['0'-'9']+['.']?['0'-'9']*
 
-rule read =
-  parse
+rule read = parse
 | whitespace {read lexbuf}
-| newline {next_line lexbuf; read lexbuf}
+| "/*" { read lexbuf }
+| newline { next_line lexbuf; read lexbuf }
+| eof { EOF }
 | "=" { EQ }
+| "!=" { NEQ }
 | "<=" { LE }
 | "<" { LT }
 | ">=" { GE }
@@ -29,18 +33,22 @@ rule read =
 | "&" { AND }
 | "|" { OR }
 | "->" { IMPLIES }
-| "<->" { BIIMP }
+| "<-" { IMPLIEDBY }
+| "<->" { IFF }
 | "\\forall" { FORALL }
 | "\\exists" { EXISTS }
-| "[" { LEFT_BRACKET }
-| "]" { RIGHT_BRACKET }
-| '{' { LEFT_BRACE }
-| '}' { RIGHT_BRACE }
-| '(' { LEFT_PAREN }
-| ')' { RIGHT_PAREN }
-| "<" { LEFT_ANGLE }
-| ">" { RIGHT_ANGLE }
+| "+" { PLUS }
+| "-" { MINUS }
+| "[" { LBRACKET }
+| "]" { RBRACKET }
+| '{' { LBRACE }
+| '}' { RBRACE }
+| '(' { LPAREN }
+| ')' { RPAREN }
+| "<" { LANGLE }
+| ">" { RANGLE }
 | ":=" { ASSIGN }
+| ":=*" { ASSIGNANY }
 | "*" { STAR }
 | "'" { PRIME }
 | "?" { TEST }
@@ -51,4 +59,9 @@ rule read =
 | "," { COMMA }
 | id { ID (Lexing.lexeme lexbuf) }
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf))}
-| eof { EOF }
+
+and comment = parse
+| "*/" { read lexbuf }
+| "\n" { next_line lexbuf; comment lexbuf }
+| eof { raise (SyntaxError "Unterminated comment")}
+| _ { comment lexbuf }

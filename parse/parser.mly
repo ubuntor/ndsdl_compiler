@@ -1,5 +1,7 @@
 %token <string> ID
+%token EOF
 %token EQ
+%token NEQ
 %token LE
 %token LT
 %token GE
@@ -8,18 +10,22 @@
 %token AND
 %token OR
 %token IMPLIES
-%token BIIMP
+%token IMPLIEDBY
+%token IFF
 %token FORALL
 %token EXISTS
-%token LEFT_BRACKET
-%token RIGHT_BRACKET
-%token LEFT_BRACE
-%token RIGHT_BRACE
-%token LEFT_PAREN
-%token RIGHT_PAREN
-%token LEFT_ANGLE
-%token RIGHT_ANGLE
+%token PLUS
+%token MINUS
+%token LBRACKET
+%token RBRACKET
+%token LBRACE
+%token RBRACE
+%token LPAREN
+%token RPAREN
+%token LANGLE
+%token RANGLE
 %token ASSIGN
+%token ASSIGNANY
 %token STAR
 %token PRIME
 %token TEST
@@ -28,19 +34,9 @@
 %token REPEAT
 %token PROB_CHOICE
 %token COMMA
-%token EOF
 
-%right ARROW
-
-%start <Ndsdl.File.t option> file
+%start <Ndsdl.Formula.t option> formula
 %%
 
-file:
-| EOF { None }
-| e = expr EOF { Some e }
-
-program:
-|
-
 formula:
-| 
+| x = ID { Ndsdl.Formula.Var x }
