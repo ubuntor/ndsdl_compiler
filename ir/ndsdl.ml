@@ -13,7 +13,7 @@ module Term = struct
   [@@deriving sexp]
 end
 
-(* duplicate types needed for mutually recursive types in separate modules and the [@@deriving sexp] *)
+(* duplicate types needed to use [@@deriving sexp] with mutually recursive types in separate modules *)
 module rec Program : sig
   type t =
     | Assign of string * Term.t
