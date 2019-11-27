@@ -29,6 +29,8 @@ rule read = parse
 | "<" { LT }
 | ">=" { GE }
 | ">" { GT }
+| "true" { TRUE }
+| "false" { FALSE }
 | "!" { NOT }
 | "&" { AND }
 | "|" { OR }

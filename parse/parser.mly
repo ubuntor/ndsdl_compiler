@@ -6,6 +6,8 @@
 %token LT
 %token GE
 %token GT
+%token TRUE
+%token FALSE
 %token NOT
 %token AND
 %token OR
@@ -35,8 +37,17 @@
 %token PROB_CHOICE
 %token COMMA
 
-%start <Ndsdl.Formula.t option> formula
+%start <Ndsdl.Formula.t> formula
 %%
 
+term:
+| x = ID { Ndsdl.Term.Var x }
+
+program:
+| TEST; p = formula { Ndsdl.Program.Test p }
+
 formula:
-| x = ID { Ndsdl.Formula.Var x }
+| TRUE { Ndsdl.Formula.True }
+| FALSE { Ndsdl.Formula.False }
+| LBRACKET; a = program; RBRACKET; p = formula { Ndsdl.Formula.Box (a,p)}
+| LPAREN; p = formula; RPAREN { p }

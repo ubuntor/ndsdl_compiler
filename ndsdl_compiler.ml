@@ -1,10 +1,10 @@
 open Core
 
 let main ~input_file ~output_file =
-  let output_file = Option.value ~default:(input_file ^ ".out") output_file in
+  let _output_file = Option.value ~default:(input_file ^ ".out") output_file in
   match Parse.lex_and_parse input_file with
   | Some parsed ->
-      Printf.printf !"Parsed successfully: %{sexp:Ndsdl.File.t}\n" parsed
+      Printf.printf !"Parsed successfully: %{sexp:Ndsdl.Formula.t}\n" parsed
   | None -> Printf.printf !"Failed to parse"
 
 let command =
