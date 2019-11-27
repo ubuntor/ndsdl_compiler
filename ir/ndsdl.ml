@@ -21,7 +21,7 @@ module rec Program : sig
     | Assignany of string
     | Test of Formula.t
     | Compose of t * t
-    | Loop of t * t
+    | Loop of t
     | Choice of t * t
     | Probchoice of (int * t) * (int * t) (* TODO *)
   [@@deriving sexp]
@@ -31,7 +31,7 @@ end = struct
     | Assignany of string
     | Test of Formula.t
     | Compose of t * t
-    | Loop of t * t
+    | Loop of t
     | Choice of t * t
     | Probchoice of (int * t) * (int * t) (* TODO *)
   [@@deriving sexp]
@@ -42,7 +42,7 @@ and Formula : sig
     | True
     | False
     | Or of t * t
-    | Not of t * t
+    | Not of t
     | And of t * t
     | Implies of t * t
     | Equiv of t * t
@@ -62,7 +62,7 @@ end = struct
     | True
     | False
     | Or of t * t
-    | Not of t * t
+    | Not of t
     | And of t * t
     | Implies of t * t
     | Equiv of t * t

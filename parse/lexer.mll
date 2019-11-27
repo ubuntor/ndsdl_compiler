@@ -26,9 +26,7 @@ rule read = parse
 | "=" { EQ }
 | "!=" { NEQ }
 | "<=" { LE }
-| "<" { LT }
 | ">=" { GE }
-| ">" { GT }
 | "true" { TRUE }
 | "false" { FALSE }
 | "!" { NOT }
@@ -58,7 +56,6 @@ rule read = parse
 | "?" { TEST }
 | ";" { SEMICOLON }
 | "++" { CHOICE }
-| "*" { REPEAT }
 | "+++" { PROB_CHOICE }
 | "," { COMMA }
 | id { ID (Lexing.lexeme lexbuf) }
