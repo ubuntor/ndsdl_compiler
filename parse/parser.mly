@@ -39,16 +39,16 @@
 %token PROB_CHOICE
 %token COMMA
 
-%left CHOICE PROB_CHOICE
-%left SEMICOLON
-%left LOOP (* dummy *)
-%left EQUIV
-%left IMPLIES IMPLIEDBY
-%left OR
-%left AND
-%left NOT
-%left DIAMOND (* dummy *)
-%left BOX (* dummy *)
+%right CHOICE PROB_CHOICE
+%right SEMICOLON
+%right LOOP (* dummy *)
+%nonassoc EQUIV
+%right IMPLIES IMPLIEDBY
+%right OR
+%right AND
+%right NOT
+%right DIAMOND (* dummy *)
+%right BOX (* dummy *)
 %left EXISTS
 %left FORALL
 %left EQ NEQ LE LT GE GT
@@ -72,6 +72,7 @@ term:
 | e1 = term; TIMES; e2 = term { Ndsdl.Term.Times (e1,e2) }
 | e1 = term; DIV; e2 = term { Ndsdl.Term.Div (e1,e2) }
 | e1 = term; EXP; e2 = term { Ndsdl.Term.Exp (e1,e2) }
+| LPAREN; e = term; RPAREN; PRIME { Ndsdl.Term.Prime e }
 | LPAREN; e = term; RPAREN { e }
 
 program:
