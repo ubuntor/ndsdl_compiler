@@ -41,6 +41,8 @@ rule read = parse
 | "\\exists" { EXISTS }
 | "+" { PLUS }
 | "-" { MINUS }
+| "/" { DIV }
+| "^" { EXP }
 | "[" { LBRACKET }
 | "]" { RBRACKET }
 | '{' { LBRACE }

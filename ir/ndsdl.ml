@@ -10,6 +10,7 @@ module Term = struct
     | Div of t * t
     | Exp of t * t
     | Prime of t
+    | Neg of t
   [@@deriving sexp]
 end
 
@@ -50,6 +51,7 @@ and Formula : sig
     | Le of Term.t * Term.t
     | Gt of Term.t * Term.t
     | Ge of Term.t * Term.t
+    | Neq of Term.t * Term.t
     | Forall of string * t
     | Exists of string * t
     | Box of Program.t * t
@@ -69,6 +71,7 @@ end = struct
     | Le of Term.t * Term.t
     | Gt of Term.t * Term.t
     | Ge of Term.t * Term.t
+    | Neq of Term.t * Term.t
     | Forall of string * t
     | Exists of string * t
     | Box of Program.t * t
