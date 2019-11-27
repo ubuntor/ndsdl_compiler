@@ -95,8 +95,8 @@ formula:
 | e1 = term; LANGLE; e2 = term { Ndsdl.Formula.Lt (e1,e2) } %prec GT
 | e1 = term; LE; e2 = term { Ndsdl.Formula.Le (e1,e2) }
 | e1 = term; NEQ; e2 = term { Ndsdl.Formula.Neq (e1,e2) }
-| FORALL; x = ID; p = formula { Ndsdl.Formula.Forall (x,p) }
-| EXISTS; x = ID; p = formula { Ndsdl.Formula.Exists (x,p) }
+| FORALL; x = ID; p = formula { Ndsdl.Formula.Forall (x,p) } %prec FORALL
+| EXISTS; x = ID; p = formula { Ndsdl.Formula.Exists (x,p) } %prec EXISTS
 | LBRACKET; a = program; RBRACKET; p = formula { Ndsdl.Formula.Box (a,p) } %prec BOX
 | LANGLE; a = program; RANGLE; p = formula { Ndsdl.Formula.Diamond (a,p) } %prec DIAMOND
 | LPAREN; p = formula; RPAREN { p }
