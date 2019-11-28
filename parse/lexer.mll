@@ -54,8 +54,9 @@ rule read = parse
 | "?" { TEST }
 | ";" { SEMICOLON }
 | "++" { CHOICE }
-| "+++" { PROB_CHOICE }
+| "+++" { PROBCHOICE }
 | "," { COMMA }
+| ":" { COLON }
 | id { ID (Lexing.lexeme lexbuf) }
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf))}
 

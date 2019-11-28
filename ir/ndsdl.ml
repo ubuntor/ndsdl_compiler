@@ -17,7 +17,6 @@ module Term = struct
     | Times of t * t
     | Div of t * t
     | Exp of t * t
-    | Prime of t
     | Neg of t
   [@@deriving sexp]
 end
@@ -31,7 +30,7 @@ module rec Program : sig
     | Compose of t * t
     | Loop of t
     | Choice of t * t
-    | Probchoice of (Number.t * t) * (Number.t * t)
+    | Probchoice of (Term.t * t) list
     | Ode of ((Var.t * Term.t) list * Formula.t option)
   [@@deriving sexp]
 end = struct
@@ -42,7 +41,7 @@ end = struct
     | Compose of t * t
     | Loop of t
     | Choice of t * t
-    | Probchoice of (Number.t * t) * (Number.t * t)
+    | Probchoice of (Term.t * t) list
     | Ode of ((Var.t * Term.t) list * Formula.t option)
   [@@deriving sexp]
 end

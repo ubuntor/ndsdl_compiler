@@ -32,11 +32,12 @@
 %token TEST
 %token SEMICOLON
 %token CHOICE
-%token PROB_CHOICE
+%token PROBCHOICE
 %token COMMA
+%token COLON
 
 (* precedence, lowest to highest *)
-%right CHOICE PROB_CHOICE
+%right CHOICE PROBCHOICE
 %right SEMICOLON
 %right COMMA
 %right LOOP (* dummy terminal *)
@@ -71,7 +72,6 @@ term:
 | e1 = term; TIMES; e2 = term { Ndsdl.Term.Times (e1,e2) }
 | e1 = term; DIV; e2 = term { Ndsdl.Term.Div (e1,e2) }
 | e1 = term; EXP; e2 = term { Ndsdl.Term.Exp (e1,e2) }
-| LPAREN; e = term; RPAREN; PRIME { Ndsdl.Term.Prime e }
 | LPAREN; e = term; RPAREN { e }
 
 program:
@@ -81,13 +81,16 @@ program:
 | x = ID; ASSIGN; e = term { Ndsdl.Program.Assign (x,e) }
 | x = ID; ASSIGN; TIMES { Ndsdl.Program.Assignany x }
 | LBRACE; a = program; RBRACE; TIMES { Ndsdl.Program.Loop a } %prec LOOP
-| LBRACE; o = ode; RBRACE { Ndsdl.Program.Ode (o, None)}
-| LBRACE; o = ode; AND; f = formula; RBRACE { Ndsdl.Program.Ode (o, Some f)}
+| LBRACE; o = separated_nonempty_list(COMMA, ode); RBRACE { Ndsdl.Program.Ode (o, None)}
+| LBRACE; o = separated_nonempty_list(COMMA, ode); AND; f = formula; RBRACE { Ndsdl.Program.Ode (o, Some f)}
+| LBRACE; p = separated_nonempty_list(PROBCHOICE, probchoice); RBRACE { Ndsdl.Program.Probchoice p }
 | LBRACE; a = program; RBRACE { a }
 
 ode:
-| x = ID; PRIME; EQ; e = term { [(x,e)] }
-| o1 = ode; COMMA; o2 = ode { o1 @ o2 }
+| x = ID; PRIME; EQ; e = term { (x,e) }
+
+probchoice:
+| p = term; COLON; a = program { (p, a) }
 
 formula:
 | TRUE { Ndsdl.Formula.True }
