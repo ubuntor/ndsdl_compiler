@@ -1,4 +1,5 @@
 %token <string> ID
+%token <string> NUMBER
 %token EOF
 %token EQ
 %token NEQ
@@ -10,7 +11,6 @@
 %token AND
 %token OR
 %token IMPLIES
-%token IMPLIEDBY
 %token IFF
 %token FORALL
 %token EXISTS
@@ -35,21 +35,23 @@
 %token PROB_CHOICE
 %token COMMA
 
+(* precedence, lowest to highest *)
 %right CHOICE PROB_CHOICE
 %right SEMICOLON
-%right LOOP (* dummy *)
+%right COMMA
+%right LOOP (* dummy terminal *)
 %nonassoc IFF
-%right IMPLIES IMPLIEDBY
+%right IMPLIES
 %right OR
 %right AND
 %right NOT
-%right DIAMOND (* dummy *)
-%right BOX (* dummy *)
+%right DIAMOND (* dummy terminal *)
+%right BOX (* dummy terminal *)
 %right EXISTS
 %right FORALL
 %right EQ NEQ LE LT GE GT
 %left PLUS MINUS
-%left NEG (* dummy *)
+%left NEG (* dummy terminal *)
 %left TIMES DIV
 %right EXP
 
@@ -62,6 +64,7 @@ top_level:
 
 term:
 | x = ID { Ndsdl.Term.Var x }
+| c = NUMBER { Ndsdl.Term.Number c }
 | MINUS; e = term { Ndsdl.Term.Neg e } %prec NEG
 | e1 = term; PLUS; e2 = term { Ndsdl.Term.Plus (e1,e2) }
 | e1 = term; MINUS; e2 = term { Ndsdl.Term.Minus (e1,e2) }
@@ -78,7 +81,13 @@ program:
 | x = ID; ASSIGN; e = term { Ndsdl.Program.Assign (x,e) }
 | x = ID; ASSIGN; TIMES { Ndsdl.Program.Assignany x }
 | LBRACE; a = program; RBRACE; TIMES { Ndsdl.Program.Loop a } %prec LOOP
+| LBRACE; o = ode; RBRACE { Ndsdl.Program.Ode (o, None)}
+| LBRACE; o = ode; AND; f = formula; RBRACE { Ndsdl.Program.Ode (o, Some f)}
 | LBRACE; a = program; RBRACE { a }
+
+ode:
+| x = ID; PRIME; EQ; e = term { [(x,e)] }
+| o1 = ode; COMMA; o2 = ode { o1 @ o2 }
 
 formula:
 | TRUE { Ndsdl.Formula.True }

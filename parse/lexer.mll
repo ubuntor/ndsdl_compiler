@@ -33,7 +33,6 @@ rule read = parse
 | "&" { AND }
 | "|" { OR }
 | "->" { IMPLIES }
-| "<-" { IMPLIEDBY }
 | "<->" { IFF }
 | "\\forall" { FORALL }
 | "\\exists" { EXISTS }

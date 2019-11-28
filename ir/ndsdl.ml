@@ -1,9 +1,17 @@
 open! Core
 
+module Var = struct
+  type t = string [@@deriving sexp]
+end
+
+module Number = struct
+  type t = string [@@deriving sexp]
+end
+
 module Term = struct
   type t =
-    | Var of string
-    | Const of int (* TODO *)
+    | Var of Var.t
+    | Number of Number.t
     | Plus of t * t
     | Minus of t * t
     | Times of t * t
@@ -17,23 +25,25 @@ end
 (* duplicate types needed to use [@@deriving sexp] with mutually recursive types in separate modules *)
 module rec Program : sig
   type t =
-    | Assign of string * Term.t
-    | Assignany of string
+    | Assign of Var.t * Term.t
+    | Assignany of Var.t
     | Test of Formula.t
     | Compose of t * t
     | Loop of t
     | Choice of t * t
-    | Probchoice of (int * t) * (int * t) (* TODO *)
+    | Probchoice of (Number.t * t) * (Number.t * t)
+    | Ode of ((Var.t * Term.t) list * Formula.t option)
   [@@deriving sexp]
 end = struct
   type t =
-    | Assign of string * Term.t
-    | Assignany of string
+    | Assign of Var.t * Term.t
+    | Assignany of Var.t
     | Test of Formula.t
     | Compose of t * t
     | Loop of t
     | Choice of t * t
-    | Probchoice of (int * t) * (int * t) (* TODO *)
+    | Probchoice of (Number.t * t) * (Number.t * t)
+    | Ode of ((Var.t * Term.t) list * Formula.t option)
   [@@deriving sexp]
 end
 
@@ -52,8 +62,8 @@ and Formula : sig
     | Gt of Term.t * Term.t
     | Ge of Term.t * Term.t
     | Neq of Term.t * Term.t
-    | Forall of string * t
-    | Exists of string * t
+    | Forall of Var.t * t
+    | Exists of Var.t * t
     | Box of Program.t * t
     | Diamond of Program.t * t
   [@@deriving sexp]
@@ -72,8 +82,8 @@ end = struct
     | Gt of Term.t * Term.t
     | Ge of Term.t * Term.t
     | Neq of Term.t * Term.t
-    | Forall of string * t
-    | Exists of string * t
+    | Forall of Var.t * t
+    | Exists of Var.t * t
     | Box of Program.t * t
     | Diamond of Program.t * t
   [@@deriving sexp]
