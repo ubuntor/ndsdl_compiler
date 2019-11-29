@@ -1,4 +1,5 @@
-open! Core
+(* Based on KeYmaeraXPrettyPrinter.scala *)
+open Core
 
 module Var = struct
   type t = string [@@deriving sexp]
@@ -24,12 +25,12 @@ module Term = struct
     match term with
     | Var x -> x
     | Number n -> n
-    | Plus (e1, e2) -> Printf.sprintf "(%s+%s)" (to_string e1) (to_string e2)
-    | Minus (e1, e2) -> Printf.sprintf "(%s-%s)" (to_string e1) (to_string e2)
-    | Times (e1, e2) -> Printf.sprintf "(%s*%s)" (to_string e1) (to_string e2)
-    | Div (e1, e2) -> Printf.sprintf "(%s/%s)" (to_string e1) (to_string e2)
-    | Exp (e1, e2) -> Printf.sprintf "(%s^%s)" (to_string e1) (to_string e2)
-    | Neg e -> Printf.sprintf "(-%s)" (to_string e)
+    | Plus (e1, e2) -> Printf.sprintf "(%s)+(%s)" (to_string e1) (to_string e2)
+    | Minus (e1, e2) -> Printf.sprintf "(%s)-(%s)" (to_string e1) (to_string e2)
+    | Times (e1, e2) -> Printf.sprintf "(%s)*(%s)" (to_string e1) (to_string e2)
+    | Div (e1, e2) -> Printf.sprintf "(%s)/(%s)" (to_string e1) (to_string e2)
+    | Exp (e1, e2) -> Printf.sprintf "(%s)^(%s)" (to_string e1) (to_string e2)
+    | Neg e -> Printf.sprintf "-(%s)" (to_string e)
 end
 
 (* duplicate types needed to use [@@deriving sexp] with mutually recursive types in separate modules *)
@@ -58,12 +59,12 @@ end = struct
 
   let rec to_string program =
     match program with
-    | Assign (x, e) -> Printf.sprintf "%s := %s" x (Term.to_string e)
-    | Assignany x -> Printf.sprintf "%s := *" x
-    | Test p -> Printf.sprintf "?%s" (Formula.to_string p)
-    | Compose (a, b) -> Printf.sprintf "{%s; %s;}" (to_string a) (to_string b)
+    | Assign (x, e) -> Printf.sprintf "%s := %s;" x (Term.to_string e)
+    | Assignany x -> Printf.sprintf "%s := *;" x
+    | Test p -> Printf.sprintf "?%s;" (Formula.to_string p)
+    | Compose (a, b) -> Printf.sprintf "{%s}{%s}" (to_string a) (to_string b)
     | Loop a -> Printf.sprintf "{%s}*" (to_string a)
-    | Choice (a, b) -> Printf.sprintf "{%s ++ %s}" (to_string a) (to_string b)
+    | Choice (a, b) -> Printf.sprintf "{%s}++{%s}" (to_string a) (to_string b)
     | Ode (xs, po) ->
         Printf.sprintf "{%s%s}"
           ( List.map xs ~f:(fun (x, e) ->
@@ -121,27 +122,28 @@ end = struct
     match formula with
     | True -> "true"
     | False -> "false"
-    | Or (p, q) -> Printf.sprintf "(%s|%s)" (to_string p) (to_string q)
-    | Not p -> Printf.sprintf "(!%s)" (to_string p)
-    | And (p, q) -> Printf.sprintf "(%s&%s)" (to_string p) (to_string q)
-    | Implies (p, q) -> Printf.sprintf "(%s -> %s)" (to_string p) (to_string q)
-    | Equiv (p, q) -> Printf.sprintf "(%s <-> %s)" (to_string p) (to_string q)
+    | Or (p, q) -> Printf.sprintf "(%s)|(%s)" (to_string p) (to_string q)
+    | Not p -> Printf.sprintf "!(%s)" (to_string p)
+    | And (p, q) -> Printf.sprintf "(%s)&(%s)" (to_string p) (to_string q)
+    | Implies (p, q) ->
+        Printf.sprintf "(%s) -> (%s)" (to_string p) (to_string q)
+    | Equiv (p, q) -> Printf.sprintf "(%s) <-> (%s)" (to_string p) (to_string q)
     | Eq (e1, e2) ->
-        Printf.sprintf "(%s = %s)" (Term.to_string e1) (Term.to_string e2)
+        Printf.sprintf "(%s) = (%s)" (Term.to_string e1) (Term.to_string e2)
     | Lt (e1, e2) ->
-        Printf.sprintf "(%s < %s)" (Term.to_string e1) (Term.to_string e2)
+        Printf.sprintf "(%s) < (%s)" (Term.to_string e1) (Term.to_string e2)
     | Le (e1, e2) ->
-        Printf.sprintf "(%s <= %s)" (Term.to_string e1) (Term.to_string e2)
+        Printf.sprintf "(%s) <= (%s)" (Term.to_string e1) (Term.to_string e2)
     | Gt (e1, e2) ->
-        Printf.sprintf "(%s > %s)" (Term.to_string e1) (Term.to_string e2)
+        Printf.sprintf "(%s) > (%s)" (Term.to_string e1) (Term.to_string e2)
     | Ge (e1, e2) ->
-        Printf.sprintf "(%s >= %s)" (Term.to_string e1) (Term.to_string e2)
+        Printf.sprintf "(%s) >= (%s)" (Term.to_string e1) (Term.to_string e2)
     | Neq (e1, e2) ->
-        Printf.sprintf "(%s != %s)" (Term.to_string e1) (Term.to_string e2)
-    | Forall (x, p) -> Printf.sprintf "(\\forall %s %s)" x (to_string p)
-    | Exists (x, p) -> Printf.sprintf "(\\exists %s %s)" x (to_string p)
+        Printf.sprintf "(%s) != (%s)" (Term.to_string e1) (Term.to_string e2)
+    | Forall (x, p) -> Printf.sprintf "\\forall (%s) (%s)" x (to_string p)
+    | Exists (x, p) -> Printf.sprintf "\\exists (%s) (%s)" x (to_string p)
     | Box (a, p) ->
-        Printf.sprintf "([%s]%s)" (Program.to_string a) (to_string p)
+        Printf.sprintf "[%s](%s)" (Program.to_string a) (to_string p)
     | Diamond (a, p) ->
-        Printf.sprintf "(<%s>%s)" (Program.to_string a) (to_string p)
+        Printf.sprintf "<%s>(%s)" (Program.to_string a) (to_string p)
 end

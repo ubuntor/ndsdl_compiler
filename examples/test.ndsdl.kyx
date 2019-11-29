@@ -3,5 +3,5 @@ ProgramVariables
 End.
 
 Problem
-  ([{p := 1; {{p := (0.5*p); ?false;} ++ {{p := (0.5*p); ?false;} ++ {p := (0*p); ?false;}}};}]false)
+  [{p := 1;}{{{p := (0.5)*(p);}{?false;}}++{{{p := (0.5)*(p);}{?false;}}++{{p := (0)*(p);}{?false;}}}}](false)
 End.
