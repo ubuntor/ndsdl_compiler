@@ -59,7 +59,7 @@ end = struct
   let rec to_string program =
     match program with
     | Assign (x, e) -> Printf.sprintf "%s := %s" x (Term.to_string e)
-    | Assignany x -> Printf.sprintf "%s :=*" x
+    | Assignany x -> Printf.sprintf "%s := *" x
     | Test p -> Printf.sprintf "?%s" (Formula.to_string p)
     | Compose (a, b) -> Printf.sprintf "{%s; %s;}" (to_string a) (to_string b)
     | Loop a -> Printf.sprintf "{%s}*" (to_string a)
