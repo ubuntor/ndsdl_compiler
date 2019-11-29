@@ -1,60 +1,60 @@
 %token <string> ID
 %token <string> NUMBER
 %token EOF
-%token EQ
-%token NEQ
-%token LE
-%token GE
-%token TRUE
-%token FALSE
-%token NOT
-%token AND
-%token OR
-%token IMPLIES
-%token IFF
-%token FORALL
-%token EXISTS
-%token PLUS
-%token MINUS
-%token TIMES
-%token DIV
-%token EXP
-%token LBRACKET
-%token RBRACKET
-%token LBRACE
-%token RBRACE
-%token LPAREN
-%token RPAREN
-%token LANGLE
-%token RANGLE
-%token ASSIGN
-%token PRIME
-%token TEST
-%token SEMICOLON
-%token CHOICE
-%token PROBCHOICE
-%token COMMA
-%token COLON
+%token EQ "="
+%token NEQ "!="
+%token LE "<="
+%token GE ">="
+%token TRUE "true"
+%token FALSE "false"
+%token NOT "!"
+%token AND "&"
+%token OR "|"
+%token IMPLIES "->"
+%token IFF "<->"
+%token FORALL "forall"
+%token EXISTS "exists"
+%token PLUS "+"
+%token MINUS "-"
+%token TIMES "*"
+%token DIV "/"
+%token EXP "^"
+%token LBRACKET "["
+%token RBRACKET "]"
+%token LBRACE "{"
+%token RBRACE "}"
+%token LPAREN "("
+%token RPAREN ")"
+%token LANGLE "<"
+%token RANGLE ">"
+%token ASSIGN ":="
+%token PRIME "'"
+%token TEST "?"
+%token SEMICOLON ";"
+%token CHOICE "++"
+%token PROBCHOICE "+++"
+%token COMMA ","
+%token COLON ":"
 
 (* precedence, lowest to highest *)
-%right CHOICE PROBCHOICE
-%right SEMICOLON
-%right COMMA
-%right LOOP (* dummy terminal *)
-%nonassoc IFF
-%right IMPLIES
-%right OR
-%right AND
-%right NOT
-%right DIAMOND (* dummy terminal *)
-%right BOX (* dummy terminal *)
-%right EXISTS
-%right FORALL
-%right EQ NEQ LE LT GE GT
-%left PLUS MINUS
-%left NEG (* dummy terminal *)
-%left TIMES DIV
-%right EXP
+%right "++" "+++"
+%right ";"
+%right ","
+%right LOOP
+%nonassoc "<->"
+%right "->"
+%right "|"
+%right "&"
+%right "!"
+%right DIAMOND
+%right BOX
+%right "exists"
+%right "forall"
+%right "=" "!=" "<=" ">=" LT GT
+%left "+" "-"
+%left NEG
+%left "*" "/"
+%right "^"
 
 %start <Ndsdl.Formula.t option> top_level
 %%
@@ -66,48 +66,48 @@ top_level:
 term:
 | x = ID { Ndsdl.Term.Var x }
 | c = NUMBER { Ndsdl.Term.Number c }
-| MINUS; e = term { Ndsdl.Term.Neg e } %prec NEG
-| e1 = term; PLUS; e2 = term { Ndsdl.Term.Plus (e1,e2) }
-| e1 = term; MINUS; e2 = term { Ndsdl.Term.Minus (e1,e2) }
-| e1 = term; TIMES; e2 = term { Ndsdl.Term.Times (e1,e2) }
-| e1 = term; DIV; e2 = term { Ndsdl.Term.Div (e1,e2) }
-| e1 = term; EXP; e2 = term { Ndsdl.Term.Exp (e1,e2) }
-| LPAREN; e = term; RPAREN { e }
+| "-" e = term { Ndsdl.Term.Neg e } %prec NEG
+| e1 = term "+" e2 = term { Ndsdl.Term.Plus (e1,e2) }
+| e1 = term "-" e2 = term { Ndsdl.Term.Minus (e1,e2) }
+| e1 = term "*" e2 = term { Ndsdl.Term.Times (e1,e2) }
+| e1 = term "/" e2 = term { Ndsdl.Term.Div (e1,e2) }
+| e1 = term "^" e2 = term { Ndsdl.Term.Exp (e1,e2) }
+| "(" e = term ")" { e }
 
 program:
-| TEST; p = formula { Ndsdl.Program.Test p }
-| a = program; SEMICOLON; b = program { Ndsdl.Program.Compose (a,b) }
-| a = program; CHOICE; b = program { Ndsdl.Program.Choice (a,b) }
-| x = ID; ASSIGN; e = term { Ndsdl.Program.Assign (x,e) }
-| x = ID; ASSIGN; TIMES { Ndsdl.Program.Assignany x }
-| LBRACE; a = program; RBRACE; TIMES { Ndsdl.Program.Loop a } %prec LOOP
-| LBRACE; o = separated_nonempty_list(COMMA, ode); RBRACE { Ndsdl.Program.Ode (o, None)}
-| LBRACE; o = separated_nonempty_list(COMMA, ode); AND; f = formula; RBRACE { Ndsdl.Program.Ode (o, Some f)}
-| LBRACE; p = separated_nonempty_list(PROBCHOICE, probchoice); RBRACE { Ndsdl.Program.Probchoice p }
-| LBRACE; a = program; RBRACE { a }
+| "?" p = formula { Ndsdl.Program.Test p }
+| a = program ";" b = program { Ndsdl.Program.Compose (a,b) }
+| a = program "++" b = program { Ndsdl.Program.Choice (a,b) }
+| x = ID ":=" e = term { Ndsdl.Program.Assign (x,e) }
+| x = ID ":=" "*" { Ndsdl.Program.Assignany x }
+| "{" a = program "}" "*" { Ndsdl.Program.Loop a } %prec LOOP
+| "{" o = separated_nonempty_list(",", ode) "}" { Ndsdl.Program.Ode (o, None)}
+| "{" o = separated_nonempty_list(",", ode) "&" f = formula "}" { Ndsdl.Program.Ode (o, Some f)}
+| "{" p = separated_nonempty_list("+++", probchoice) "}" { Ndsdl.Program.Probchoice p }
+| "{" a = program "}" { a }
 
 ode:
-| x = ID; PRIME; EQ; e = term { (x,e) }
+| x = ID "'" "=" e = term { (x,e) }
 
 probchoice:
-| p = term; COLON; a = program { (p, a) }
+| p = term ":" a = program { (p, a) }
 
 formula:
-| TRUE { Ndsdl.Formula.True }
-| FALSE { Ndsdl.Formula.False }
-| p = formula; AND; q = formula { Ndsdl.Formula.And (p,q) }
-| p = formula; OR; q = formula { Ndsdl.Formula.Or (p,q) }
-| p = formula; IMPLIES; q = formula { Ndsdl.Formula.Implies (p,q) }
-| p = formula; IFF; q = formula { Ndsdl.Formula.Equiv (p,q) }
-| NOT; p = formula; { Ndsdl.Formula.Not p }
-| e1 = term; EQ; e2 = term { Ndsdl.Formula.Eq (e1,e2) }
-| e1 = term; RANGLE; e2 = term { Ndsdl.Formula.Gt (e1,e2) } %prec LT
-| e1 = term; GE; e2 = term { Ndsdl.Formula.Ge (e1,e2) }
-| e1 = term; LANGLE; e2 = term { Ndsdl.Formula.Lt (e1,e2) } %prec GT
-| e1 = term; LE; e2 = term { Ndsdl.Formula.Le (e1,e2) }
-| e1 = term; NEQ; e2 = term { Ndsdl.Formula.Neq (e1,e2) }
-| FORALL; x = ID; p = formula { Ndsdl.Formula.Forall (x,p) } %prec FORALL
-| EXISTS; x = ID; p = formula { Ndsdl.Formula.Exists (x,p) } %prec EXISTS
-| LBRACKET; a = program; RBRACKET; p = formula { Ndsdl.Formula.Box (a,p) } %prec BOX
-| LANGLE; a = program; RANGLE; p = formula { Ndsdl.Formula.Diamond (a,p) } %prec DIAMOND
-| LPAREN; p = formula; RPAREN { p }
+| "true" { Ndsdl.Formula.True }
+| "false" { Ndsdl.Formula.False }
+| p = formula "&" q = formula { Ndsdl.Formula.And (p,q) }
+| p = formula "|" q = formula { Ndsdl.Formula.Or (p,q) }
+| p = formula "->" q = formula { Ndsdl.Formula.Implies (p,q) }
+| p = formula "<->" q = formula { Ndsdl.Formula.Equiv (p,q) }
+| "!" p = formula { Ndsdl.Formula.Not p }
+| e1 = term "=" e2 = term { Ndsdl.Formula.Eq (e1,e2) }
+| e1 = term "<" e2 = term { Ndsdl.Formula.Lt (e1,e2) } %prec LT
+| e1 = term "<=" e2 = term { Ndsdl.Formula.Le (e1,e2) }
+| e1 = term ">" e2 = term { Ndsdl.Formula.Gt (e1,e2) } %prec GT
+| e1 = term ">=" e2 = term { Ndsdl.Formula.Ge (e1,e2) }
+| e1 = term "!=" e2 = term { Ndsdl.Formula.Neq (e1,e2) }
+| "forall" x = ID; p = formula { Ndsdl.Formula.Forall (x,p) } %prec FORALL
+| "exists" x = ID; p = formula { Ndsdl.Formula.Exists (x,p) } %prec EXISTS
+| "[" a = program "]" p = formula { Ndsdl.Formula.Box (a,p) } %prec BOX
+| "<" a = program ">" p = formula { Ndsdl.Formula.Diamond (a,p) } %prec DIAMOND
+| "(" p = formula ")" { p }

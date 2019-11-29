@@ -1,0 +1,7 @@
+ProgramVariables
+  Real p;
+End.
+
+Problem
+  ([{p := 1; {{p := (0.5*p); ?false;} ++ {{p := (0.5*p); ?false;} ++ {p := (0*p); ?false;}}};}]false)
+End.

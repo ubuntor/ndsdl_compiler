@@ -88,7 +88,6 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
               raise (StaticError "Probability is not between 0 and 1");
             (probability, translate_program a ~prob_var))
       in
-
       let total =
         List.fold choices ~init:Bignum.zero ~f:(fun total (p, _) ->
             Bignum.(total + p))
