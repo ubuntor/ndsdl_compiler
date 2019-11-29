@@ -80,6 +80,7 @@ program:
 | a = program "++" b = program { Ndsdl.Program.Choice (a,b) }
 | x = ID ":=" e = term { Ndsdl.Program.Assign (x,e) }
 | x = ID ":=" "*" { Ndsdl.Program.Assignany x }
+| x = ID ":=" "{" p = separated_nonempty_list(",", pmf) "}" { Ndsdl.Program.Assignpmf (x,p) }
 | "{" a = program "}" "*" { Ndsdl.Program.Loop a } %prec LOOP
 | "{" o = separated_nonempty_list(",", ode) "}" { Ndsdl.Program.Ode (o, None)}
 | "{" o = separated_nonempty_list(",", ode) "&" f = formula "}" { Ndsdl.Program.Ode (o, Some f)}
@@ -91,6 +92,9 @@ ode:
 
 probchoice:
 | p = term ":" a = program { (p, a) }
+
+pmf:
+| p = term ":" e = term { (p, e) }
 
 formula:
 | "true" { Ndsdl.Formula.True }

@@ -74,15 +74,40 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
       if String.equal x prob_var then
         raise (StaticError "Cannot assign to probability variable")
       else Assignany x
+  | Assignpmf (x, choices) ->
+      let choices =
+        List.map choices ~f:(fun (p, e) ->
+            let probability = to_const_probability p in
+            if Bignum.(probability < zero || probability > one) then
+              raise (StaticError "Probability is not between 0 and 1");
+            (probability, Dl.Program.Assign (x, translate_term e)))
+      in
+      let total =
+        List.fold choices ~init:Bignum.zero ~f:(fun total (p, _) ->
+            Bignum.(total + p))
+      in
+      if Bignum.(total <> one) then
+        raise (StaticError "Probabilities do not sum to 1");
+      let choices =
+        List.map choices ~f:(fun (p, a) ->
+            Dl.Program.Compose
+              ( Dl.Program.Assign
+                  ( prob_var,
+                    Dl.Term.Times
+                      ( Dl.Term.Number (Bignum.to_string_accurate p),
+                        Dl.Term.Var prob_var ) ),
+                a ))
+      in
+      translate_choices choices
   | Test p -> Test (translate_formula p ~prob_var)
   | Compose (a, b) ->
       Compose (translate_program a ~prob_var, translate_program b ~prob_var)
   | Loop a -> Loop (translate_program a ~prob_var)
   | Choice (a, b) ->
       Choice (translate_program a ~prob_var, translate_program b ~prob_var)
-  | Probchoice xs ->
+  | Probchoice choices ->
       let choices =
-        List.map xs ~f:(fun (e, a) ->
+        List.map choices ~f:(fun (e, a) ->
             let probability = to_const_probability e in
             if Bignum.(probability < zero || probability > one) then
               raise (StaticError "Probability is not between 0 and 1");

@@ -1,7 +1,11 @@
 ProgramVariables
   Real p;
+  Real w;
+  Real x;
+  Real y;
+  Real z;
 End.
 
 Problem
-  [{p := 1;}{{{p := (0.5)*(p);}{?false;}}++{{{p := (0.5)*(p);}{?false;}}++{{p := (0)*(p);}{?false;}}}}](false)
+  [{p := 1;}{{{p := (0.5)*(p);}{x := 1;}}++{{{p := (0.5)*(p);}{y := *;}}++{{p := (0)*(p);}{{{p := (0.2)*(p);}{z := 0;}}++{{p := (0.8)*(p);}{z := (z)+(w);}}}}}}](true)
 End.

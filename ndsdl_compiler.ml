@@ -6,7 +6,7 @@ let main ~input_file ~output_file ~prob_var =
   match Parse.lex_and_parse input_file with
   | Some parsed ->
       Printf.printf !"Parsed successfully: %{sexp:Ndsdl.Formula.t}\n" parsed;
-      let translated = Trans.translate_formula parsed ~prob_var in
+      let translated = Ndsdl_to_dl.translate_formula parsed ~prob_var in
       Printf.printf !"Translated: %{Dl.Formula}\n" translated;
       Output.output_to_file translated ~output_file;
       Printf.printf !"Wrote to %s\n" output_file

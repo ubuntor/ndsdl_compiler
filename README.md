@@ -12,16 +12,33 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
 ## Structure
   - `ndsdl_compiler.ml`: Toplevel commandline. Runs all phases of compilation.
   - `parse/`: Parser and lexer.
-  - `ir/`: Intermediate representations (NDSdL, dL).
+  - `ir/`: Intermediate representations (NDSdL_extra, NDSdL, dL).
     are valid and sum to 1.
-  - `trans/`: Translation of NDSdL into dL. Soundness proofs for translation
-    are in the paper. Also does static checking while translating:
-    - All probabilities should be valid and sum to 1 in a linear combination.
-    - The probability variable must not be written to.
+  - `trans/`: Translation between intermediate representations.
+    Soundness proofs for translations are in the paper.
+
+    Also does static checking while translating:
+    - NDSdL_extra to NDSdL:
+      - All discrete probability distributions must be well-formed.
+    - NDSdL to dL:
+      - All probabilities should be valid and sum to 1 in a linear combination.
+      - The probability variable must not be written to.
   - `output/`: Pretty printing dL to a file.
 
 ## New Syntax
 ```
 Program a ::= ...
-  | {p_1: a_1 +++ ... +++ p_n: a_n}     Linear combination: p_i must be constant
+  | x := {p_1: e_1, ..., p_n: e_n}      Random assignment from pmf:
+                                            p_i constant probabilities
+  | x := Bernoulli(p)                   Bernoulli distribution:
+                                            p constant probability
+  | x := Binomial(p, n)                 Binomial distribution:
+                                            p constant probability,
+                                            n non-negative integer constant
+  | x := Geometric(p)                   (1-indexed) Geometric distribution:
+                                            p constant probability
+  | {p_1: a_1 +++ ... +++ p_n: a_n}     Linear combination:
+                                            p_i constant probabilities
+  | {a}*:p                              Probabilistic repetition:
+                                            p constant probability
 ```
