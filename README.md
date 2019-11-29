@@ -13,9 +13,10 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
   - `ndsdl_compiler.ml`: Toplevel commandline. Runs all phases of compilation.
   - `parse/`: Parser and lexer.
   - `ir/`: Intermediate representations.
-  - `check/`: Static checking.
+    are valid and sum to 1.
   - `trans/`: Translation of NDSdL into dL. Soundness proofs for translation
-    are in the paper.
+    are in the paper. Also checks that probabilities are valid and sum to 1
+    while translating.
 
 ## New Syntax
 ```
