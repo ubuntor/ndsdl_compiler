@@ -58,6 +58,7 @@ rule read = parse
 | "," { COMMA }
 | ":" { COLON }
 | id { ID (Lexing.lexeme lexbuf) }
+| number { NUMBER (Lexing.lexeme lexbuf) }
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf))}
 
 and comment = parse
