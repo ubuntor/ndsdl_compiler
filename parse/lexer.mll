@@ -57,6 +57,8 @@ rule read = parse
 | "+++" { PROBCHOICE }
 | "," { COMMA }
 | ":" { COLON }
+| "Bernoulli" { BERNOULLI }
+| "Geometric" { GEOMETRIC }
 | id { ID (Lexing.lexeme lexbuf) }
 | number { NUMBER (Lexing.lexeme lexbuf) }
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf))}

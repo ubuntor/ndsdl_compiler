@@ -5,8 +5,12 @@ let main ~input_file ~output_file ~prob_var =
   let prob_var = Option.value ~default:"p" prob_var in
   match Parse.lex_and_parse input_file with
   | Some parsed ->
-      Printf.printf !"Parsed successfully: %{sexp:Ndsdl.Formula.t}\n" parsed;
-      let translated = Ndsdl_to_dl.translate_formula parsed ~prob_var in
+      Printf.printf
+        !"Parsed successfully: %{sexp:Ndsdl_extra.Formula.t}\n"
+        parsed;
+      let desugared = Ndsdl_extra_to_ndsdl.translate_formula parsed in
+      Printf.printf !"Desugared: %{sexp:Ndsdl.Formula.t}\n" desugared;
+      let translated = Ndsdl_to_dl.translate_formula desugared ~prob_var in
       Printf.printf !"Translated: %{Dl.Formula}\n" translated;
       Output.output_to_file translated ~output_file;
       Printf.printf !"Wrote to %s\n" output_file

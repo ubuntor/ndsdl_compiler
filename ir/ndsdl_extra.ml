@@ -23,6 +23,8 @@ module rec Program : sig
     | Assign of Var.t * Term.t
     | Assignany of Var.t
     | Assignpmf of Var.t * (Term.t * Term.t) list
+    | Assignbernoulli of Var.t * Term.t
+    | Assigngeometric of Var.t * Term.t
     | Test of Formula.t
     | Compose of t * t
     | Loop of t
@@ -36,6 +38,8 @@ end = struct
     | Assign of Var.t * Term.t
     | Assignany of Var.t
     | Assignpmf of Var.t * (Term.t * Term.t) list
+    | Assignbernoulli of Var.t * Term.t
+    | Assigngeometric of Var.t * Term.t
     | Test of Formula.t
     | Compose of t * t
     | Loop of t

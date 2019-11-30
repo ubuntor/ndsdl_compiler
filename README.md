@@ -32,9 +32,6 @@ Program a ::= ...
                                             p_i constant probabilities
   | x := Bernoulli(p)                   Bernoulli distribution:
                                             p constant probability
-  | x := Binomial(p, n)                 Binomial distribution:
-                                            p constant probability,
-                                            n non-negative integer constant
   | x := Geometric(p)                   (1-indexed) Geometric distribution:
                                             p constant probability
   | {p_1: a_1 +++ ... +++ p_n: a_n}     Linear combination:

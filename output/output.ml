@@ -4,23 +4,17 @@ let rec gather_vars_term (term : Dl.Term.t) =
   match term with
   | Var x -> String.Set.singleton x
   | Number _ -> String.Set.empty
-  | Plus (e1, e2) | Minus (e1, e2) | Times (e1, e2) | Div (e1, e2) | Exp (e1, e2)
-    ->
+  | Unop (_, e) -> gather_vars_term e
+  | Binop (_, e1, e2) ->
       String.Set.union (gather_vars_term e1) (gather_vars_term e2)
-  | Neg e -> gather_vars_term e
 
 let rec gather_vars_formula (formula : Dl.Formula.t) =
   match formula with
   | True | False -> String.Set.empty
-  | Not p -> gather_vars_formula p
-  | Or (p, q) | And (p, q) | Implies (p, q) | Equiv (p, q) ->
+  | Logicalunop (_, p) -> gather_vars_formula p
+  | Logicalbinop (_, p, q) ->
       String.Set.union (gather_vars_formula p) (gather_vars_formula q)
-  | Eq (e1, e2)
-  | Lt (e1, e2)
-  | Le (e1, e2)
-  | Gt (e1, e2)
-  | Ge (e1, e2)
-  | Neq (e1, e2) ->
+  | Compare (_, e1, e2) ->
       String.Set.union (gather_vars_term e1) (gather_vars_term e2)
   | Forall (x, p) | Exists (x, p) -> String.Set.remove (gather_vars_formula p) x
   | Box (a, p) | Diamond (a, p) ->

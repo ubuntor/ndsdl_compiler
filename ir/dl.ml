@@ -13,24 +13,28 @@ module Term = struct
   type t =
     | Var of Var.t
     | Number of Number.t
-    | Plus of t * t
-    | Minus of t * t
-    | Times of t * t
-    | Div of t * t
-    | Exp of t * t
-    | Neg of t
+    | Unop of [ `Neg ] * t
+    | Binop of [ `Plus | `Minus | `Times | `Div | `Exp ] * t * t
   [@@deriving sexp]
+
+  let unop_to_string op = match op with `Neg -> "-"
+
+  let binop_to_string op =
+    match op with
+    | `Plus -> "+"
+    | `Minus -> "-"
+    | `Times -> "*"
+    | `Div -> "/"
+    | `Exp -> "^"
 
   let rec to_string term =
     match term with
     | Var x -> x
     | Number n -> n
-    | Plus (e1, e2) -> Printf.sprintf "(%s)+(%s)" (to_string e1) (to_string e2)
-    | Minus (e1, e2) -> Printf.sprintf "(%s)-(%s)" (to_string e1) (to_string e2)
-    | Times (e1, e2) -> Printf.sprintf "(%s)*(%s)" (to_string e1) (to_string e2)
-    | Div (e1, e2) -> Printf.sprintf "(%s)/(%s)" (to_string e1) (to_string e2)
-    | Exp (e1, e2) -> Printf.sprintf "(%s)^(%s)" (to_string e1) (to_string e2)
-    | Neg e -> Printf.sprintf "-(%s)" (to_string e)
+    | Unop (op, e) -> Printf.sprintf "%s(%s)" (unop_to_string op) (to_string e)
+    | Binop (op, e1, e2) ->
+        Printf.sprintf "(%s)%s(%s)" (to_string e1) (binop_to_string op)
+          (to_string e2)
 end
 
 (* duplicate types needed to use [@@deriving sexp] with mutually recursive types in separate modules *)
@@ -79,17 +83,9 @@ and Formula : sig
   type t =
     | True
     | False
-    | Or of t * t
-    | Not of t
-    | And of t * t
-    | Implies of t * t
-    | Equiv of t * t
-    | Eq of Term.t * Term.t
-    | Lt of Term.t * Term.t
-    | Le of Term.t * Term.t
-    | Gt of Term.t * Term.t
-    | Ge of Term.t * Term.t
-    | Neq of Term.t * Term.t
+    | Logicalunop of [ `Not ] * t
+    | Logicalbinop of [ `And | `Or | `Implies | `Equiv ] * t * t
+    | Compare of [ `Eq | `Lt | `Le | `Gt | `Ge | `Neq ] * Term.t * Term.t
     | Forall of Var.t * t
     | Exists of Var.t * t
     | Box of Program.t * t
@@ -101,45 +97,46 @@ end = struct
   type t =
     | True
     | False
-    | Or of t * t
-    | Not of t
-    | And of t * t
-    | Implies of t * t
-    | Equiv of t * t
-    | Eq of Term.t * Term.t
-    | Lt of Term.t * Term.t
-    | Le of Term.t * Term.t
-    | Gt of Term.t * Term.t
-    | Ge of Term.t * Term.t
-    | Neq of Term.t * Term.t
+    | Logicalunop of [ `Not ] * t
+    | Logicalbinop of [ `And | `Or | `Implies | `Equiv ] * t * t
+    | Compare of [ `Eq | `Lt | `Le | `Gt | `Ge | `Neq ] * Term.t * Term.t
     | Forall of Var.t * t
     | Exists of Var.t * t
     | Box of Program.t * t
     | Diamond of Program.t * t
   [@@deriving sexp]
 
+  let logical_unop_to_string op = match op with `Not -> "!"
+
+  let logical_binop_to_string op =
+    match op with
+    | `And -> "&"
+    | `Or -> "|"
+    | `Implies -> "->"
+    | `Equiv -> "<->"
+
+  let compare_op_to_string op =
+    match op with
+    | `Eq -> "="
+    | `Lt -> "<"
+    | `Le -> "<="
+    | `Gt -> ">"
+    | `Ge -> ">="
+    | `Neq -> "!="
+
   let rec to_string formula =
     match formula with
     | True -> "true"
     | False -> "false"
-    | Or (p, q) -> Printf.sprintf "(%s)|(%s)" (to_string p) (to_string q)
-    | Not p -> Printf.sprintf "!(%s)" (to_string p)
-    | And (p, q) -> Printf.sprintf "(%s)&(%s)" (to_string p) (to_string q)
-    | Implies (p, q) ->
-        Printf.sprintf "(%s) -> (%s)" (to_string p) (to_string q)
-    | Equiv (p, q) -> Printf.sprintf "(%s) <-> (%s)" (to_string p) (to_string q)
-    | Eq (e1, e2) ->
-        Printf.sprintf "(%s) = (%s)" (Term.to_string e1) (Term.to_string e2)
-    | Lt (e1, e2) ->
-        Printf.sprintf "(%s) < (%s)" (Term.to_string e1) (Term.to_string e2)
-    | Le (e1, e2) ->
-        Printf.sprintf "(%s) <= (%s)" (Term.to_string e1) (Term.to_string e2)
-    | Gt (e1, e2) ->
-        Printf.sprintf "(%s) > (%s)" (Term.to_string e1) (Term.to_string e2)
-    | Ge (e1, e2) ->
-        Printf.sprintf "(%s) >= (%s)" (Term.to_string e1) (Term.to_string e2)
-    | Neq (e1, e2) ->
-        Printf.sprintf "(%s) != (%s)" (Term.to_string e1) (Term.to_string e2)
+    | Logicalbinop (op, p, q) ->
+        Printf.sprintf "(%s) %s (%s)" (to_string p)
+          (logical_binop_to_string op)
+          (to_string q)
+    | Logicalunop (op, p) ->
+        Printf.sprintf "%s(%s)" (logical_unop_to_string op) (to_string p)
+    | Compare (op, e1, e2) ->
+        Printf.sprintf "(%s) %s (%s)" (Term.to_string e1)
+          (compare_op_to_string op) (Term.to_string e2)
     | Forall (x, p) -> Printf.sprintf "\\forall (%s) (%s)" x (to_string p)
     | Exists (x, p) -> Printf.sprintf "\\exists (%s) (%s)" x (to_string p)
     | Box (a, p) ->

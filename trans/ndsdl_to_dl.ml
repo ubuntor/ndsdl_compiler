@@ -2,16 +2,23 @@ open Core
 
 exception StaticError of string
 
-let rec to_const_probability (term : Ndsdl.Term.t) =
-  match term with
-  | Number n -> Bignum.of_string n
-  | Plus (e1, e2) -> Bignum.(to_const_probability e1 + to_const_probability e2)
-  | Minus (e1, e2) -> Bignum.(to_const_probability e1 - to_const_probability e2)
-  | Times (e1, e2) -> Bignum.(to_const_probability e1 * to_const_probability e2)
-  | Div (e1, e2) -> Bignum.(to_const_probability e1 / to_const_probability e2)
-  | Neg e -> Bignum.(zero - to_const_probability e)
-  | Var _ -> raise (StaticError "probability is not constant")
-  | Exp _ -> raise (StaticError "exp not supported as probability")
+let to_const_probability term =
+  let rec to_const (term : Ndsdl.Term.t) =
+    match term with
+    | Number n -> Bignum.of_string n
+    | Unop (`Neg, e) -> Bignum.(zero - to_const e)
+    | Binop (`Plus, e1, e2) -> Bignum.(to_const e1 + to_const e2)
+    | Binop (`Minus, e1, e2) -> Bignum.(to_const e1 - to_const e2)
+    | Binop (`Times, e1, e2) -> Bignum.(to_const e1 * to_const e2)
+    | Binop (`Div, e1, e2) -> Bignum.(to_const e1 / to_const e2)
+    | Var _ -> raise (StaticError "probability is not constant")
+    | Binop (`Exp, _, _) ->
+        raise (StaticError "exp not supported as probability")
+  in
+  let probability = to_const term in
+  if Bignum.(probability < zero || probability > one) then
+    raise (StaticError "Probability is not between 0 and 1");
+  probability
 
 let rec translate_choices choices : Dl.Program.t =
   match choices with
@@ -19,36 +26,30 @@ let rec translate_choices choices : Dl.Program.t =
   | [ a ] -> a
   | x :: xs -> Choice (x, translate_choices xs)
 
+let multiply_probability p ~prob_var =
+  Dl.Program.Assign
+    ( prob_var,
+      Dl.Term.Binop
+        ( `Times,
+          Dl.Term.Number (Bignum.to_string_accurate p),
+          Dl.Term.Var prob_var ) )
+
 let rec translate_term (term : Ndsdl.Term.t) : Dl.Term.t =
   match term with
   | Var x -> Var x
   | Number n -> Number n
-  | Plus (e1, e2) -> Plus (translate_term e1, translate_term e2)
-  | Minus (e1, e2) -> Minus (translate_term e1, translate_term e2)
-  | Times (e1, e2) -> Times (translate_term e1, translate_term e2)
-  | Div (e1, e2) -> Div (translate_term e1, translate_term e2)
-  | Exp (e1, e2) -> Exp (translate_term e1, translate_term e2)
-  | Neg e -> Neg (translate_term e)
+  | Unop (op, e) -> Unop (op, translate_term e)
+  | Binop (op, e1, e2) -> Binop (op, translate_term e1, translate_term e2)
 
 let rec translate_formula (formula : Ndsdl.Formula.t) ~prob_var : Dl.Formula.t =
   match formula with
   | True -> True
   | False -> False
-  | Or (p, q) ->
-      Or (translate_formula p ~prob_var, translate_formula q ~prob_var)
-  | Not p -> Not (translate_formula p ~prob_var)
-  | And (p, q) ->
-      And (translate_formula p ~prob_var, translate_formula q ~prob_var)
-  | Implies (p, q) ->
-      Implies (translate_formula p ~prob_var, translate_formula q ~prob_var)
-  | Equiv (p, q) ->
-      Equiv (translate_formula p ~prob_var, translate_formula q ~prob_var)
-  | Eq (e1, e2) -> Eq (translate_term e1, translate_term e2)
-  | Lt (e1, e2) -> Lt (translate_term e1, translate_term e2)
-  | Le (e1, e2) -> Le (translate_term e1, translate_term e2)
-  | Gt (e1, e2) -> Gt (translate_term e1, translate_term e2)
-  | Ge (e1, e2) -> Ge (translate_term e1, translate_term e2)
-  | Neq (e1, e2) -> Neq (translate_term e1, translate_term e2)
+  | Logicalunop (op, p) -> Logicalunop (op, translate_formula p ~prob_var)
+  | Logicalbinop (op, p, q) ->
+      Logicalbinop
+        (op, translate_formula p ~prob_var, translate_formula q ~prob_var)
+  | Compare (op, e1, e2) -> Compare (op, translate_term e1, translate_term e2)
   | Forall (x, p) -> Forall (x, translate_formula p ~prob_var)
   | Exists (x, p) -> Exists (x, translate_formula p ~prob_var)
   | Box (a, p) ->
@@ -77,10 +78,7 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
   | Assignpmf (x, choices) ->
       let choices =
         List.map choices ~f:(fun (p, e) ->
-            let probability = to_const_probability p in
-            if Bignum.(probability < zero || probability > one) then
-              raise (StaticError "Probability is not between 0 and 1");
-            (probability, Dl.Program.Assign (x, translate_term e)))
+            (to_const_probability p, Dl.Program.Assign (x, translate_term e)))
       in
       let total =
         List.fold choices ~init:Bignum.zero ~f:(fun total (p, _) ->
@@ -90,28 +88,24 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
         raise (StaticError "Probabilities do not sum to 1");
       let choices =
         List.map choices ~f:(fun (p, a) ->
-            Dl.Program.Compose
-              ( Dl.Program.Assign
-                  ( prob_var,
-                    Dl.Term.Times
-                      ( Dl.Term.Number (Bignum.to_string_accurate p),
-                        Dl.Term.Var prob_var ) ),
-                a ))
+            Dl.Program.Compose (multiply_probability p ~prob_var, a))
       in
       translate_choices choices
   | Test p -> Test (translate_formula p ~prob_var)
   | Compose (a, b) ->
       Compose (translate_program a ~prob_var, translate_program b ~prob_var)
   | Loop a -> Loop (translate_program a ~prob_var)
+  | Probloop (e, a) ->
+      let p = to_const_probability e in
+      Loop
+        (Dl.Program.Compose
+           (multiply_probability p ~prob_var, translate_program a ~prob_var))
   | Choice (a, b) ->
       Choice (translate_program a ~prob_var, translate_program b ~prob_var)
   | Probchoice choices ->
       let choices =
         List.map choices ~f:(fun (e, a) ->
-            let probability = to_const_probability e in
-            if Bignum.(probability < zero || probability > one) then
-              raise (StaticError "Probability is not between 0 and 1");
-            (probability, translate_program a ~prob_var))
+            (to_const_probability e, translate_program a ~prob_var))
       in
       let total =
         List.fold choices ~init:Bignum.zero ~f:(fun total (p, _) ->
@@ -121,13 +115,7 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
         raise (StaticError "Probabilities do not sum to 1");
       let choices =
         List.map choices ~f:(fun (p, a) ->
-            Dl.Program.Compose
-              ( Dl.Program.Assign
-                  ( prob_var,
-                    Dl.Term.Times
-                      ( Dl.Term.Number (Bignum.to_string_accurate p),
-                        Dl.Term.Var prob_var ) ),
-                a ))
+            Dl.Program.Compose (multiply_probability p ~prob_var, a))
       in
       translate_choices choices
   | Ode (xs, po) ->
