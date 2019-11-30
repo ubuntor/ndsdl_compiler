@@ -20,6 +20,7 @@ let to_const_probability term =
     raise (StaticError "Probability is not between 0 and 1");
   probability
 
+(* translate n-ary choice to tree of binary choices *)
 let rec translate_choices choices : Dl.Program.t =
   match choices with
   | [] -> raise (StaticError "no choices")

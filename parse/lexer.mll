@@ -19,8 +19,8 @@ let id = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9']*['_']?['_']?['0'-'9']*
 let number = ['0'-'9']+['.']?['0'-'9']*
 
 rule read = parse
-| whitespace {read lexbuf}
-| "/*" { read lexbuf }
+| whitespace { read lexbuf }
+| "/*" { comment lexbuf }
 | newline { next_line lexbuf; read lexbuf }
 | eof { EOF }
 | "=" { EQ }

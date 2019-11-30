@@ -12,7 +12,10 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
 ## Structure
   - `ndsdl_compiler.ml`: Toplevel commandline. Runs all phases of compilation.
   - `parse/`: Parser and lexer.
-  - `ir/`: Intermediate representations (NDSdL_extra, NDSdL, dL).
+  - `ir/`: Intermediate representations:
+    - `Ndsdl_extra`: NDSdL with syntactic sugar for Bernoulli and Geometric.
+    - `Ndsdl`: NDSdL.
+    - `Dl`: dL.
     are valid and sum to 1.
   - `trans/`: Translation between intermediate representations.
     Soundness proofs for translations are in the paper.
