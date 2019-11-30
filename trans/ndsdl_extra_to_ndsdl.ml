@@ -1,7 +1,5 @@
 open Core
 
-exception StaticError of string
-
 let rec translate_term (term : Ndsdl_extra.Term.t) : Ndsdl.Term.t =
   match term with
   | Var x -> Var x
