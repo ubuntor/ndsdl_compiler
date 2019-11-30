@@ -18,11 +18,8 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
     Soundness proofs for translations are in the paper.
 
     Also does static checking while translating:
-    - NDSdL_extra to NDSdL:
-      - All discrete probability distributions must be well-formed.
-    - NDSdL to dL:
-      - All probabilities should be valid and sum to 1 in a linear combination.
-      - The probability variable must not be written to.
+    - All probabilities should be valid and sum to 1 in a linear combination.
+    - The probability variable must not be written to.
   - `output/`: Pretty printing dL to a file.
 
 ## New Syntax
