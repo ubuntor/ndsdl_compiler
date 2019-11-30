@@ -16,7 +16,7 @@ let to_const_probability term =
         raise (StaticError "exp not supported as probability")
   in
   let probability = to_const term in
-  if Bignum.(probability < zero || probability > one) then
+  if not Bignum.(zero <= probability && probability <= one) then
     raise (StaticError "Probability is not between 0 and 1");
   probability
 
@@ -104,8 +104,8 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
       Choice (translate_program a ~prob_var, translate_program b ~prob_var)
   | Probchoice choices ->
       let choices =
-        List.map choices ~f:(fun (e, a) ->
-            (to_const_probability e, translate_program a ~prob_var))
+        List.map choices ~f:(fun (p, a) ->
+            (to_const_probability p, translate_program a ~prob_var))
       in
       let total =
         List.fold choices ~init:Bignum.zero ~f:(fun total (p, _) ->

@@ -37,7 +37,6 @@
 %token COMMA ","
 %token COLON ":"
 %token BERNOULLI "Bernoulli"
-%token BINOMIAL "Binomial"
 %token GEOMETRIC "Geometric"
 
 (* precedence, lowest to highest *)
