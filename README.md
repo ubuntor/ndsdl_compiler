@@ -77,7 +77,7 @@ Formula P ::=
   | e_1!=e_2
   | \forall x e
   | \exists x e
-  | [a]P
-  | <a>P
+  | [a]P | [a;]P                        We allow an extra semicolon at the end
+  | <a>P | <a;>P                          of a program.
   | (P)
 ```

@@ -118,6 +118,6 @@ formula:
 | e1 = term "!=" e2 = term { Ndsdl_extra.Formula.Compare (`Neq,e1,e2) }
 | "forall" x = ID; p = formula { Ndsdl_extra.Formula.Forall (x,p) } %prec FORALL
 | "exists" x = ID; p = formula { Ndsdl_extra.Formula.Exists (x,p) } %prec EXISTS
-| "[" a = program "]" p = formula { Ndsdl_extra.Formula.Box (a,p) } %prec BOX
-| "<" a = program ">" p = formula { Ndsdl_extra.Formula.Diamond (a,p) } %prec DIAMOND
+| "[" a = program ";"? "]" p = formula { Ndsdl_extra.Formula.Box (a,p) } %prec BOX
+| "<" a = program ";"? ">" p = formula { Ndsdl_extra.Formula.Diamond (a,p) } %prec DIAMOND
 | "(" p = formula ")" { p }
