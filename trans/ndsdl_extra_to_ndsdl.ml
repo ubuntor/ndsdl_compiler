@@ -39,7 +39,9 @@ and translate_program (program : Ndsdl_extra.Program.t) =
       let e = translate_term e in
       Compose
         ( Assign (x, Number "1"),
-          Probloop (e, Assign (x, Binop (`Plus, Var x, Number "1"))) )
+          Probloop
+            ( Binop (`Minus, Number "1", e),
+              Assign (x, Binop (`Plus, Var x, Number "1")) ) )
   | Test p -> Test (translate_formula p)
   | Compose (a, b) -> Compose (translate_program a, translate_program b)
   | Loop a -> Loop (translate_program a)
