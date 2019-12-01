@@ -51,8 +51,14 @@ let rec translate_formula (formula : Ndsdl.Formula.t) ~prob_var : Dl.Formula.t =
       Logicalbinop
         (op, translate_formula p ~prob_var, translate_formula q ~prob_var)
   | Compare (op, e1, e2) -> Compare (op, translate_term e1, translate_term e2)
-  | Forall (x, p) -> Forall (x, translate_formula p ~prob_var)
-  | Exists (x, p) -> Exists (x, translate_formula p ~prob_var)
+  | Forall (x, p) ->
+      if String.equal x prob_var then
+        raise (StaticError "Cannot bind probability variable");
+      Forall (x, translate_formula p ~prob_var)
+  | Exists (x, p) ->
+      if String.equal x prob_var then
+        raise (StaticError "Cannot bind probability variable");
+      Exists (x, translate_formula p ~prob_var)
   | Box (a, p) ->
       Box
         ( Dl.Program.Compose
@@ -70,13 +76,15 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
   match program with
   | Assign (x, e) ->
       if String.equal x prob_var then
-        raise (StaticError "Cannot assign to probability variable")
-      else Assign (x, translate_term e)
+        raise (StaticError "Cannot assign to probability variable");
+      Assign (x, translate_term e)
   | Assignany x ->
       if String.equal x prob_var then
-        raise (StaticError "Cannot assign to probability variable")
-      else Assignany x
+        raise (StaticError "Cannot assign to probability variable");
+      Assignany x
   | Assignpmf (x, choices) ->
+      if String.equal x prob_var then
+        raise (StaticError "Cannot assign to probability variable");
       let choices =
         List.map choices ~f:(fun (p, e) ->
             (to_const_probability p, Dl.Program.Assign (x, translate_term e)))
@@ -120,6 +128,11 @@ and translate_program (program : Ndsdl.Program.t) ~prob_var : Dl.Program.t =
       in
       translate_choices choices
   | Ode (xs, po) ->
-      Ode
-        ( List.map xs ~f:(fun (x, e) -> (x, translate_term e)),
-          Option.map po ~f:(fun p -> translate_formula p ~prob_var) )
+      let xs =
+        List.map xs ~f:(fun (x, e) ->
+            if String.equal x prob_var then
+              raise (StaticError "Cannot modify probability variable");
+            (x, translate_term e))
+      in
+      let po = Option.map po ~f:(fun p -> translate_formula p ~prob_var) in
+      Ode (xs, po)

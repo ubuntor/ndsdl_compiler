@@ -59,12 +59,11 @@
 %left "*" "/"
 %right "^"
 
-%start <Ndsdl_extra.Formula.t option> top_level
+%start <Ndsdl_extra.Formula.t> top_level
 %%
 
 top_level:
-| p = formula; EOF { Some p }
-| EOF { None }
+| p = formula; EOF { p }
 
 term:
 | x = ID { Ndsdl_extra.Term.Var x }

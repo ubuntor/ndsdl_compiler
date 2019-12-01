@@ -11,7 +11,7 @@ let main ~input_file ~output_file ~prob_var =
       let desugared = Ndsdl_extra_to_ndsdl.translate_formula parsed in
       Printf.printf !"Desugared: %{sexp:Ndsdl.Formula.t}\n" desugared;
       let translated = Ndsdl_to_dl.translate_formula desugared ~prob_var in
-      Printf.printf !"Translated: %{Dl.Formula}\n" translated;
+      Printf.printf !"Translated: %{sexp:Dl.Formula.t}\n" translated;
       Output.output_to_file translated ~output_file;
       Printf.printf !"Wrote to %s\n" output_file
   | None -> Printf.printf !"Failed to parse\n"
