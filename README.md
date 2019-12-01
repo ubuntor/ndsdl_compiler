@@ -21,7 +21,7 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
     Soundness proofs for translations are in the paper.
 
     Also does static checking while translating:
-    - All probabilities should be valid and sum to 1 in a linear combination.
+    - All probabilities should be valid and sum to 1 in a probabilistic choice.
     - The probability variable must not be written to.
   - `output/`: Pretty printing dL to a file.
 
@@ -29,13 +29,17 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
 ```
 Program a ::=
   | x := {p_1: e_1, ..., p_n: e_n}      Random assignment from pmf:
-                                          p_i constant probabilities
+                                          p_i constant probabilities,
+                                          p_i must sum to 1.
   | x := Bernoulli(p)                   Bernoulli distribution:
                                           p constant probability
   | x := Geometric(p)                   (1-indexed) Geometric distribution:
                                           p constant probability
-  | {p_1: a_1 +++ ... +++ p_n: a_n}     Linear combination:
-                                          p_i constant probabilities
+  | {p_1: a_1 +++ ... +++ p_n: a_n}     Probabilistic choice:
+                                          p_i constant probabilities,
+                                          p_i must sum to 1.
+                                          The choices are parsed as a list, not
+                                          as binary choices.
   | {a}*:p                              Probabilistic repetition:
                                           p constant probability
   | a; b                                Note that the semicolon is explicitly
