@@ -24,7 +24,8 @@ You can also run `dune exec -- ./ndsdl_compiler.exe` to run the compiler.
     - All probabilities should be valid and sum to 1 in a probabilistic choice.
     - The number of times to unroll probabilistic loops should be a nonnegative
       integer.
-  - `output/`: Pretty printing dL to a file.
+  - `output/`: Pretty printing dL to a `.kyx` file.
+  - `examples/`: Example NDSdL formulas and `.kyx` output files.
 
 ## Syntax
 ```
