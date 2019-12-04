@@ -10,7 +10,8 @@ let rec unroll_prob_loop (prob, program, iterations) : Ndsdl.Program.t =
     Probchoice
       [
         (one_minus_prob, nop);
-        (prob, unroll_prob_loop (prob, program, iterations - 1));
+        ( prob,
+          Compose (program, unroll_prob_loop (prob, program, iterations - 1)) );
       ]
 
 let rec translate_term (term : Ndsdl_extra.Term.t) : Ndsdl.Term.t =

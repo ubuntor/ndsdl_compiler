@@ -100,7 +100,8 @@ let rec rho ((rev_program_list : Ndsdl.Program.t list), formula) :
       List.fold choices ~init:([], Ndsdl.Term.Number "0")
         ~f:(fun (totalx, totale) (x, e) ->
           (totalx @ x, Binop (`Plus, totale, e)))
-  | Compose (_, _) :: _ -> failwith "impossible"
+  | (Compose (_, _) as a) :: programs ->
+      rho (program_to_rev_list a @ programs, formula)
 
 let sigma ((preconditions, bound), prob) : Ndsdl.Formula.t =
   let precondition =
