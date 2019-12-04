@@ -49,14 +49,23 @@ let indicator formula var : Ndsdl.Formula.t =
         (`And, Logicalunop (`Not, formula), Compare (`Eq, Var var, Number "0"))
     )
 
+(* We operate on a reversed list of programs so we can access the last program easily. *)
 let rec rho ((rev_program_list : Ndsdl.Program.t list), formula) :
     Ndsdl.Formula.t list * Ndsdl.Term.t =
   match rev_program_list with
   | [] ->
       let y = fresh_var () in
       ([ indicator formula y ], Var y)
-  | Assign (x, e) :: programs -> rho (programs, Diamond (Assign (x, e), formula))
-  | Assignany x :: programs -> rho (programs, Exists (x, formula))
+  | (Assign _ as a) :: programs
+  | (Assignany _ as a) :: programs
+  | (Test _ as a) :: programs
+  | (Loop _ as a) :: programs
+  | (Ode _ as a) :: programs ->
+      rho (programs, Diamond (a, formula))
+  | (Probloop (p, _) as a) :: programs ->
+      (* check probability *)
+      let _ = to_const_probability p in
+      rho (programs, Diamond (a, formula))
   | Assignpmf (x, choices) :: programs ->
       (* probabilities are checked when translating the final formula *)
       let choices =
@@ -67,25 +76,6 @@ let rec rho ((rev_program_list : Ndsdl.Program.t list), formula) :
       List.fold choices ~init:([], Ndsdl.Term.Number "0")
         ~f:(fun (totalx, totale) (x, e) ->
           (totalx @ x, Binop (`Plus, totale, e)))
-  | Test q :: programs -> rho (programs, Logicalbinop (`And, q, formula))
-  | (Probloop (p, _) as a) :: programs ->
-      (* check probability *)
-      let _ = to_const_probability p in
-      let y = fresh_var () in
-      ( [
-          indicator
-            (Diamond (Compose (a, rev_list_to_program programs), formula))
-            y;
-        ],
-        Var y )
-  | (Loop _ as a) :: programs | (Ode _ as a) :: programs ->
-      let y = fresh_var () in
-      ( [
-          indicator
-            (Diamond (Compose (a, rev_list_to_program programs), formula))
-            y;
-        ],
-        Var y )
   | Choice (a, b) :: programs ->
       let x1, e1 = rho (a :: programs, formula) in
       let x2, e2 = rho (b :: programs, formula) in
