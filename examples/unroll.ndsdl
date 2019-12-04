@@ -1,0 +1,4 @@
+/* demonstration of unrolling a probabilistic loop (geometric variable) */
+<|
+x := Geometric(3/4)@unroll(2)
+|>(x >= 3) <= 1/16

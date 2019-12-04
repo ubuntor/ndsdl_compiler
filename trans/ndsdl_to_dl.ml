@@ -28,18 +28,19 @@ let to_const_probability term =
     raise (StaticError "Probability is not between 0 and 1");
   probability
 
-let rec program_to_list (program : Ndsdl.Program.t) =
+let rec program_to_rev_list (program : Ndsdl.Program.t) =
   match program with
-  | Compose (a, b) -> program_to_list a @ program_to_list b
+  | Compose (a, b) -> program_to_rev_list b @ program_to_rev_list a
   | _ -> [ program ]
 
-let rec list_to_program (program_list : Ndsdl.Program.t list) : Ndsdl.Program.t
-    =
+let rec rev_list_to_program (program_list : Ndsdl.Program.t list) :
+    Ndsdl.Program.t =
   match program_list with
   | [] -> Test True
   | [ x ] -> x
-  | x :: xs -> Compose (x, list_to_program xs)
+  | x :: xs -> Compose (rev_list_to_program xs, x)
 
+(* See the associated paper for definitions of indicator, rho, and sigma. *)
 let indicator formula var : Ndsdl.Formula.t =
   Logicalbinop
     ( `Or,
@@ -48,9 +49,9 @@ let indicator formula var : Ndsdl.Formula.t =
         (`And, Logicalunop (`Not, formula), Compare (`Eq, Var var, Number "0"))
     )
 
-let rec rho ((program_list : Ndsdl.Program.t list), formula) :
+let rec rho ((rev_program_list : Ndsdl.Program.t list), formula) :
     Ndsdl.Formula.t list * Ndsdl.Term.t =
-  match program_list with
+  match rev_program_list with
   | [] ->
       let y = fresh_var () in
       ([ indicator formula y ], Var y)
@@ -72,13 +73,17 @@ let rec rho ((program_list : Ndsdl.Program.t list), formula) :
       let _ = to_const_probability p in
       let y = fresh_var () in
       ( [
-          indicator (Diamond (Compose (a, list_to_program programs), formula)) y;
+          indicator
+            (Diamond (Compose (a, rev_list_to_program programs), formula))
+            y;
         ],
         Var y )
   | (Loop _ as a) :: programs | (Ode _ as a) :: programs ->
       let y = fresh_var () in
       ( [
-          indicator (Diamond (Compose (a, list_to_program programs), formula)) y;
+          indicator
+            (Diamond (Compose (a, rev_list_to_program programs), formula))
+            y;
         ],
         Var y )
   | Choice (a, b) :: programs ->
@@ -132,7 +137,7 @@ let rec translate_formula (formula : Ndsdl.Formula.t) : Dl.Formula.t =
   | Box (a, p) -> Box (translate_program a, translate_formula p)
   | Diamond (a, p) -> Diamond (translate_program a, translate_formula p)
   | Bound (a, p, e) ->
-      let a = program_to_list a in
+      let a = program_to_rev_list a in
       translate_formula (sigma (rho (a, p), e))
 
 and translate_program (program : Ndsdl.Program.t) : Dl.Program.t =
