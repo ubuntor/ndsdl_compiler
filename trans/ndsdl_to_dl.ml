@@ -33,13 +33,6 @@ let rec program_to_rev_list (program : Ndsdl.Program.t) =
   | Compose (a, b) -> program_to_rev_list b @ program_to_rev_list a
   | _ -> [ program ]
 
-let rec rev_list_to_program (program_list : Ndsdl.Program.t list) :
-    Ndsdl.Program.t =
-  match program_list with
-  | [] -> Test True
-  | [ x ] -> x
-  | x :: xs -> Compose (rev_list_to_program xs, x)
-
 (* See the associated paper for definitions of indicator, rho, and sigma. *)
 let indicator formula var : Ndsdl.Formula.t =
   Logicalbinop
@@ -127,9 +120,7 @@ let rec translate_formula (formula : Ndsdl.Formula.t) : Dl.Formula.t =
   | Exists (x, p) -> Exists (x, translate_formula p)
   | Box (a, p) -> Box (translate_program a, translate_formula p)
   | Diamond (a, p) -> Diamond (translate_program a, translate_formula p)
-  | Bound (a, p, e) ->
-      let a = program_to_rev_list a in
-      translate_formula (sigma (rho (a, p), e))
+  | Bound (a, p, e) -> translate_formula (sigma (rho ([ a ], p), e))
 
 and translate_program (program : Ndsdl.Program.t) : Dl.Program.t =
   match program with
