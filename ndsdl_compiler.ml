@@ -1,8 +1,7 @@
 open Core
 
-let main ~input_file ~output_file ~prob_var =
+let main ~input_file ~output_file =
   let output_file = Option.value ~default:(input_file ^ ".kyx") output_file in
-  let prob_var = Option.value ~default:"p" prob_var in
   match Parse.lex_and_parse input_file with
   | Some parsed ->
       Printf.printf
@@ -10,7 +9,7 @@ let main ~input_file ~output_file ~prob_var =
         parsed;
       let desugared = Ndsdl_extra_to_ndsdl.translate_formula parsed in
       Printf.printf !"Desugared: %{sexp:Ndsdl.Formula.t}\n" desugared;
-      let translated = Ndsdl_to_dl.translate_formula desugared ~prob_var in
+      let translated = Ndsdl_to_dl.translate_formula desugared in
       Printf.printf !"Translated: %{sexp:Dl.Formula.t}\n" translated;
       Output.output_to_file translated ~output_file;
       Printf.printf !"Wrote to %s\n" output_file
@@ -25,12 +24,7 @@ let command =
         flag "-o"
           (optional Filename.arg_type)
           ~doc:"filename Output filename. Defaults to \"input_filename.kyx\"."
-      and prob_var =
-        flag "-p" (optional string)
-          ~doc:
-            "prob_var Probability variable. Must not be assigned to. Defaults \
-             to \"p\"."
       in
-      fun () -> main ~input_file ~output_file ~prob_var)
+      fun () -> main ~input_file ~output_file)
 
 let () = Command.run command

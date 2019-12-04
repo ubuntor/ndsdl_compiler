@@ -24,11 +24,11 @@ module rec Program : sig
     | Assignany of Var.t
     | Assignpmf of Var.t * (Term.t * Term.t) list
     | Assignbernoulli of Var.t * Term.t
-    | Assigngeometric of Var.t * Term.t
+    | Assigngeometric of Var.t * Term.t * int
     | Test of Formula.t
     | Compose of t * t
     | Loop of t
-    | Probloop of Term.t * t
+    | Probloop of Term.t * t * int
     | Choice of t * t
     | Probchoice of (Term.t * t) list
     | Ode of ((Var.t * Term.t) list * Formula.t option)
@@ -39,11 +39,11 @@ end = struct
     | Assignany of Var.t
     | Assignpmf of Var.t * (Term.t * Term.t) list
     | Assignbernoulli of Var.t * Term.t
-    | Assigngeometric of Var.t * Term.t
+    | Assigngeometric of Var.t * Term.t * int
     | Test of Formula.t
     | Compose of t * t
     | Loop of t
-    | Probloop of Term.t * t
+    | Probloop of Term.t * t * int
     | Choice of t * t
     | Probchoice of (Term.t * t) list
     | Ode of ((Var.t * Term.t) list * Formula.t option)
@@ -61,6 +61,7 @@ and Formula : sig
     | Exists of Var.t * t
     | Box of Program.t * t
     | Diamond of Program.t * t
+    | Bound of Program.t * t * Term.t
   [@@deriving sexp]
 end = struct
   type t =
@@ -73,5 +74,6 @@ end = struct
     | Exists of Var.t * t
     | Box of Program.t * t
     | Diamond of Program.t * t
+    | Bound of Program.t * t * Term.t
   [@@deriving sexp]
 end

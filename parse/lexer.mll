@@ -49,6 +49,8 @@ rule read = parse
 | ')' { RPAREN }
 | "<" { LANGLE }
 | ">" { RANGLE }
+| "<|" { LTRI }
+| "|>" { RTRI }
 | ":=" { ASSIGN }
 | "'" { PRIME }
 | "?" { TEST }
@@ -59,6 +61,7 @@ rule read = parse
 | ":" { COLON }
 | "Bernoulli" { BERNOULLI }
 | "Geometric" { GEOMETRIC }
+| "@unroll" { UNROLL }
 | id { ID (Lexing.lexeme lexbuf) }
 | number { NUMBER (Lexing.lexeme lexbuf) }
 | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf))}

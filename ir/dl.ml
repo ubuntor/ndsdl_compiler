@@ -15,6 +15,7 @@ module Term = struct
     | Number of Number.t
     | Unop of [ `Neg ] * t
     | Binop of [ `Plus | `Minus | `Times | `Div | `Exp ] * t * t
+    | Max of t * t
   [@@deriving sexp]
 
   let unop_to_string op = match op with `Neg -> "-"
@@ -35,6 +36,8 @@ module Term = struct
     | Binop (op, e1, e2) ->
         Printf.sprintf "(%s)%s(%s)" (to_string e1) (binop_to_string op)
           (to_string e2)
+    | Max (e1, e2) ->
+        Printf.sprintf "max((%s),(%s))" (to_string e1) (to_string e2)
 end
 
 (* duplicate types needed to use [@@deriving sexp] with mutually recursive types in separate modules *)

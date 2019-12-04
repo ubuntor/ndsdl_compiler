@@ -14,6 +14,7 @@ module Term = struct
     | Number of Number.t
     | Unop of [ `Neg ] * t
     | Binop of [ `Plus | `Minus | `Times | `Div | `Exp ] * t * t
+    | Max of t * t
   [@@deriving sexp]
 end
 
@@ -57,6 +58,7 @@ and Formula : sig
     | Exists of Var.t * t
     | Box of Program.t * t
     | Diamond of Program.t * t
+    | Bound of Program.t * t * Term.t
   [@@deriving sexp]
 end = struct
   type t =
@@ -69,5 +71,6 @@ end = struct
     | Exists of Var.t * t
     | Box of Program.t * t
     | Diamond of Program.t * t
+    | Bound of Program.t * t * Term.t
   [@@deriving sexp]
 end

@@ -5,7 +5,7 @@ let rec gather_vars_term (term : Dl.Term.t) =
   | Var x -> String.Set.singleton x
   | Number _ -> String.Set.empty
   | Unop (_, e) -> gather_vars_term e
-  | Binop (_, e1, e2) ->
+  | Binop (_, e1, e2) | Max (e1, e2) ->
       String.Set.union (gather_vars_term e1) (gather_vars_term e2)
 
 let rec gather_vars_formula (formula : Dl.Formula.t) =

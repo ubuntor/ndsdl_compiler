@@ -28,6 +28,8 @@
 %token RPAREN ")"
 %token LANGLE "<"
 %token RANGLE ">"
+%token LTRI "<|"
+%token RTRI "|>"
 %token ASSIGN ":="
 %token PRIME "'"
 %token TEST "?"
@@ -38,8 +40,9 @@
 %token COLON ":"
 %token BERNOULLI "Bernoulli"
 %token GEOMETRIC "Geometric"
+%token UNROLL "@unroll"
 
-(* precedence, lowest to highest *)
+(* precedence, lowest to highest: same precedence rules as KeYmaera X *)
 %right "++" "+++"
 %right ";"
 %right ","
@@ -84,9 +87,13 @@ program:
 | x = ID ":=" "*" { Ndsdl_extra.Program.Assignany x }
 | x = ID ":=" "{" p = separated_nonempty_list(",", pmf) "}" { Ndsdl_extra.Program.Assignpmf (x,p) }
 | x = ID ":=" "Bernoulli" "(" p = term ")" { Ndsdl_extra.Program.Assignbernoulli (x,p) }
-| x = ID ":=" "Geometric" "(" p = term ")" { Ndsdl_extra.Program.Assigngeometric (x,p) }
+| x = ID ":=" "Geometric" "(" p = term ")" { Ndsdl_extra.Program.Assigngeometric (x,p,0) }
+| x = ID ":=" "Geometric" "(" p = term ")" "@unroll" "(" n = NUMBER ")"
+  { Ndsdl_extra.Program.Assigngeometric (x,p,Core.Int.of_string n) }
 | "{" a = program "}" "*" { Ndsdl_extra.Program.Loop a } %prec LOOP
-| "{" a = program "}" "*" ":" p = term { Ndsdl_extra.Program.Probloop (p, a) } %prec PROBLOOP
+| "{" a = program "}" "*" ":" p = term { Ndsdl_extra.Program.Probloop (p, a, 0) } %prec PROBLOOP
+| "{" a = program "}" "*" ":" p = term "@unroll" "(" n = NUMBER ")"
+  { Ndsdl_extra.Program.Probloop (p, a, Core.Int.of_string n) } %prec PROBLOOP
 | "{" o = separated_nonempty_list(",", ode) "}" { Ndsdl_extra.Program.Ode (o, None)}
 | "{" o = separated_nonempty_list(",", ode) "&" f = formula "}" { Ndsdl_extra.Program.Ode (o, Some f)}
 | "{" p = separated_nonempty_list("+++", probchoice) "}" { Ndsdl_extra.Program.Probchoice p }
@@ -119,4 +126,5 @@ formula:
 | "exists" x = ID; p = formula { Ndsdl_extra.Formula.Exists (x,p) } %prec EXISTS
 | "[" a = program ";"? "]" p = formula { Ndsdl_extra.Formula.Box (a,p) } %prec BOX
 | "<" a = program ";"? ">" p = formula { Ndsdl_extra.Formula.Diamond (a,p) } %prec DIAMOND
+| "<|" a = program ";"? "|>" p = formula "<=" e = term { Ndsdl_extra.Formula.Bound (a,p,e) }
 | "(" p = formula ")" { p }
