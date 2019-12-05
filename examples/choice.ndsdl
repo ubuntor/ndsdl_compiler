@@ -1,0 +1,6 @@
+/* nondeterminstic choice and probability bounds */
+<|
+x := Bernoulli(1/3)
+++
+x := Bernoulli(2/3)
+|>(x=1) <= 2/3
