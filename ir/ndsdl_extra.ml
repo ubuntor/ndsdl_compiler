@@ -27,7 +27,7 @@ module rec Program : sig
     | Assigngeometric of Var.t * Term.t * int
     | Test of Formula.t
     | Compose of t * t
-    | Loop of t
+    | Loop of t * int
     | Probloop of Term.t * t * int
     | Choice of t * t
     | Probchoice of (Term.t * t) list
@@ -42,7 +42,7 @@ end = struct
     | Assigngeometric of Var.t * Term.t * int
     | Test of Formula.t
     | Compose of t * t
-    | Loop of t
+    | Loop of t * int
     | Probloop of Term.t * t * int
     | Choice of t * t
     | Probchoice of (Term.t * t) list

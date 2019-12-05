@@ -57,6 +57,7 @@ Program a ::=
   | a ++ b                                KeYmaera X.
   | x := e
   | {a}*
+  | {a}*@unroll(n)                      Unroll loop: n nonnegative integer
   | {x' = e, ...}
   | {x' = e, ... & P}
   | {a}

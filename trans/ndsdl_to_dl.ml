@@ -129,10 +129,14 @@ and translate_program (program : Ndsdl.Program.t) : Dl.Program.t =
   | Assign (x, e) -> Assign (x, translate_term e)
   | Assignany x -> Assignany x
   | Assignpmf (x, choices) ->
+      let choices =
+        List.filter_map choices ~f:(fun (p, e) ->
+            let p = to_const_probability p in
+            if Bignum.(p = zero) then None else Some (p, translate_term e))
+      in
       let total, choices =
         List.fold_map choices ~init:Bignum.zero ~f:(fun total (p, e) ->
-            ( Bignum.(total + to_const_probability p),
-              Dl.Program.Assign (x, translate_term e) ))
+            (Bignum.(total + p), Dl.Program.Assign (x, e)))
       in
       if Bignum.(total <> one) then
         raise (StaticError "Probabilities do not sum to 1");
@@ -141,13 +145,21 @@ and translate_program (program : Ndsdl.Program.t) : Dl.Program.t =
   | Compose (a, b) -> Compose (translate_program a, translate_program b)
   | Loop a -> Loop (translate_program a)
   | Probloop (e, a) ->
-      check_probability e;
-      Loop (translate_program a)
+      let probability = to_const_probability e in
+      if Bignum.(probability = zero) then Test True
+      else if Bignum.(probability = one) then
+        Compose (Loop (translate_program a), Test False)
+      else Loop (translate_program a)
   | Choice (a, b) -> Choice (translate_program a, translate_program b)
   | Probchoice choices ->
+      let choices =
+        List.filter_map choices ~f:(fun (p, a) ->
+            let p = to_const_probability p in
+            if Bignum.(p = zero) then None else Some (p, translate_program a))
+      in
       let total, choices =
         List.fold_map choices ~init:Bignum.zero ~f:(fun total (p, a) ->
-            (Bignum.(total + to_const_probability p), translate_program a))
+            (Bignum.(total + p), a))
       in
       if Bignum.(total <> one) then
         raise (StaticError "Probabilities do not sum to 1");

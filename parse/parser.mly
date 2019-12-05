@@ -90,7 +90,9 @@ program:
 | x = ID ":=" "Geometric" "(" p = term ")" { Ndsdl_extra.Program.Assigngeometric (x,p,0) }
 | x = ID ":=" "Geometric" "(" p = term ")" "@unroll" "(" n = NUMBER ")"
   { Ndsdl_extra.Program.Assigngeometric (x,p,Core.Int.of_string n) }
-| "{" a = program "}" "*" { Ndsdl_extra.Program.Loop a } %prec LOOP
+| "{" a = program "}" "*" { Ndsdl_extra.Program.Loop (a, 0) } %prec LOOP
+| "{" a = program "}" "*" "@unroll" "(" n = NUMBER ")"
+  { Ndsdl_extra.Program.Loop (a, Core.Int.of_string n) } %prec LOOP
 | "{" a = program "}" "*" ":" p = term { Ndsdl_extra.Program.Probloop (p, a, 0) } %prec PROBLOOP
 | "{" a = program "}" "*" ":" p = term "@unroll" "(" n = NUMBER ")"
   { Ndsdl_extra.Program.Probloop (p, a, Core.Int.of_string n) } %prec PROBLOOP

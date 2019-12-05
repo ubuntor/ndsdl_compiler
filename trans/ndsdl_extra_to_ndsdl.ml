@@ -2,6 +2,12 @@ open Core
 
 exception StaticError of string
 
+let rec unroll_loop (program, iterations) : Ndsdl.Program.t =
+  if iterations = 0 then Loop program
+  else
+    let nop = Ndsdl.Program.Test True in
+    Choice (nop, Compose (program, unroll_loop (program, iterations - 1)))
+
 let rec unroll_prob_loop (prob, program, iterations) : Ndsdl.Program.t =
   if iterations = 0 then Probloop (prob, program)
   else
@@ -65,7 +71,7 @@ and translate_program (program : Ndsdl_extra.Program.t) =
               n ) )
   | Test p -> Test (translate_formula p)
   | Compose (a, b) -> Compose (translate_program a, translate_program b)
-  | Loop a -> Loop (translate_program a)
+  | Loop (a, n) -> unroll_loop (translate_program a, n)
   | Probloop (e, a, n) ->
       if n < 0 then raise (StaticError "Unroll number must be nonnegative")
       else unroll_prob_loop (translate_term e, translate_program a, n)
