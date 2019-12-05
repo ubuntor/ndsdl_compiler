@@ -28,6 +28,8 @@ let to_const_probability term =
     raise (StaticError "Probability is not between 0 and 1");
   probability
 
+let check_probability term = ignore (to_const_probability term)
+
 let rec program_to_rev_list (program : Ndsdl.Program.t) =
   match program with
   | Compose (a, b) -> program_to_rev_list b @ program_to_rev_list a
@@ -56,8 +58,7 @@ let rec rho ((rev_program_list : Ndsdl.Program.t list), formula) :
   | (Ode _ as a) :: programs ->
       rho (programs, Diamond (a, formula))
   | (Probloop (p, _) as a) :: programs ->
-      (* check probability *)
-      let _ = to_const_probability p in
+      check_probability p;
       rho (programs, Diamond (a, formula))
   | Assignpmf (x, choices) :: programs ->
       (* probabilities are checked when translating the final formula *)
@@ -87,6 +88,7 @@ let rec rho ((rev_program_list : Ndsdl.Program.t list), formula) :
       rho (program_to_rev_list a @ programs, formula)
 
 let sigma ((preconditions, bound), prob) : Ndsdl.Formula.t =
+  check_probability prob;
   let precondition =
     List.fold preconditions ~init:Ndsdl.Formula.True ~f:(fun p q ->
         Logicalbinop (`And, p, q))
@@ -139,8 +141,7 @@ and translate_program (program : Ndsdl.Program.t) : Dl.Program.t =
   | Compose (a, b) -> Compose (translate_program a, translate_program b)
   | Loop a -> Loop (translate_program a)
   | Probloop (e, a) ->
-      (* check probability is valid *)
-      let _ = to_const_probability e in
+      check_probability e;
       Loop (translate_program a)
   | Choice (a, b) -> Choice (translate_program a, translate_program b)
   | Probchoice choices ->
